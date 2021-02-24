@@ -20,6 +20,6 @@ Simulated example data where drug toxicity is cumulative over the course of trea
 }
 }
 \author{
-Blake Langlais  \email{langlais.blake@mayo.edu}
+Blake Langlais
 }
 \keyword{data}

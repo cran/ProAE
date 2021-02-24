@@ -479,23 +479,23 @@ toxFigures = function(dsn,
     foot_note = ""
     ptsize1="12pt"
     ptsize2="16pt"
-    for (k in facets){
+    for (k in facets){ #U23CD
       if(k=="Frequency"){
-        freq0 = paste0("<span style='font-size:",ptsize1,"'>\U23CD </span> Never   /   ")
+        freq0 = paste0("<span style='font-size:",ptsize1,"'>\U23F9 </span> Never   /   ")
         freq1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, ";'>\U23F9</span>Rarely   /   ")
         freq2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U23F9</span>Occasionally   /   ")
         freq3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U23F9</span>Frequently   /   ")
         freq4 = paste0("<span style='font-size:",ptsize2,";color:", item_col4, ";'>\U23F9</span>Almost constantly")
         foot_note = paste0(foot_note, "**Frequency:** ", freq0, freq1, freq2, freq3, freq4, "<br>")
       } else if(k=="Severity"){
-        sev0 = paste0("<span style='font-size:",ptsize1,";'>\U23CD </span> None  /  ")
+        sev0 = paste0("<span style='font-size:",ptsize1,";'>\U23F9 </span> None  /  ")
         sev1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, "'>\U23F9</span>  Mild   /   ")
         sev2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U23F9</span>Moderate   /   ")
         sev3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U23F9</span>Severe   /   ")
         sev4 = paste0("<span style='font-size:",ptsize2,";color:", item_col4, ";'>\U23F9</span>Very severe")
         foot_note = paste0(foot_note, "**Severity:** ", sev0, sev1, sev2, sev3, sev4, "<br>")
       } else if(k=="Interference"){
-        int0 = paste0("<span style='font-size:",ptsize1,";'>\U23CD </span> Not at all  /  ")
+        int0 = paste0("<span style='font-size:",ptsize1,";'>\U23F9 </span> Not at all  /  ")
         int1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, ";'>\U23F9</span>A little bit   /   ")
         int2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U23F9</span>Somewhat   /   ")
         int3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U23F9</span>Quite a bit   /   ")

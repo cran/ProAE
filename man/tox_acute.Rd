@@ -20,6 +20,6 @@ Simulated example data where the drug group experiences acute toxicity followed 
 }
 }
 \author{
-Blake Langlais  \email{langlais.blake@mayo.edu}
+Blake Langlais
 }
 \keyword{data}

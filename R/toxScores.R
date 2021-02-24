@@ -358,7 +358,7 @@ toxScores = function(dsn, reformat=FALSE, impute=FALSE, composites=FALSE, short_
   if(length(colnames(dsn2)[!(names(dsn2) %in% names(dsn))]) > 0){
     col_ranks = data.frame(colnames_end = colnames(dsn2)[!(names(dsn2) %in% names(dsn))])
     col_ranks$colnames_num = as.numeric(gsub(".*PROCTCAE_\\s*|_COMP.*", "", col_ranks$colnames_end))
-    col_end = levels(col_ranks[order(col_ranks$colnames_num),]$colnames_end)
+    col_end = levels(factor(col_ranks[order(col_ranks$colnames_num),]$colnames_end))
   }else{
     col_end = c()
   }

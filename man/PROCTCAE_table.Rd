@@ -8,7 +8,7 @@
 A data frame with 124 rows and 2 variables
 }
 \description{
-A crosswalk / look-up table of expected variable names for associated PRO-CTCAE symptom items. The variables are as follows
+A crosswalk / look-up table of expected variable names for associated PRO-CTCAE symptom items.
 }
 \details{
 \itemize{
@@ -20,6 +20,6 @@ A crosswalk / look-up table of expected variable names for associated PRO-CTCAE 
 \url{https://healthcaredelivery.cancer.gov/pro-ctcae/instrument-pro.html}
 }
 \author{
-Blake Langlais  \email{langlais.blake@mayo.edu}
+Blake Langlais
 }
 \keyword{data}

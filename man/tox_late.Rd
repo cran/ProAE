@@ -20,6 +20,6 @@ Simulated example data where the drug group experiences late incipient toxicity 
 }
 }
 \author{
-Blake Langlais  \email{langlais.blake@mayo.edu}
+Blake Langlais
 }
 \keyword{data}

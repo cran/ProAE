@@ -8,7 +8,7 @@ NULL
 
 #' PRO-CTCAE variable / label crosswalk
 #'
-#' A crosswalk / look-up table of expected variable names for associated PRO-CTCAE symptom items. The variables are as follows
+#' A crosswalk / look-up table of expected variable names for associated PRO-CTCAE symptom items.
 #'
 #' \itemize{
 #'   \item name. Expected variable name - item number/letter corresponds to the NCI-PRO-CTCAE (English) Item Library Version 1.0
@@ -17,7 +17,7 @@ NULL
 #'
 #' @name PROCTCAE_table
 #' @docType data
-#' @author Blake Langlais  \email{langlais.blake@mayo.edu}
+#' @author Blake Langlais
 #' @references \url{https://healthcaredelivery.cancer.gov/pro-ctcae/instrument-pro.html}
 #' @keywords data
 #' @format A data frame with 124 rows and 2 variables
@@ -37,7 +37,7 @@ NULL
 #'
 #' @name tox_acute
 #' @docType data
-#' @author Blake Langlais  \email{langlais.blake@mayo.edu}
+#' @author Blake Langlais
 #' @keywords data
 #' @format A data frame with 1400 rows and 5 variables
 NULL
@@ -56,7 +56,7 @@ NULL
 #'
 #' @name tox_chronic
 #' @docType data
-#' @author Blake Langlais  \email{langlais.blake@mayo.edu}
+#' @author Blake Langlais
 #' @keywords data
 #' @format A data frame with 1400 rows and 5 variables
 NULL
@@ -75,7 +75,7 @@ NULL
 #'
 #' @name tox_cumulative
 #' @docType data
-#' @author Blake Langlais  \email{langlais.blake@mayo.edu}
+#' @author Blake Langlais
 #' @keywords data
 #' @format A data frame with 1400 rows and 5 variables
 NULL
@@ -94,7 +94,7 @@ NULL
 #'
 #' @name tox_late
 #' @docType data
-#' @author Blake Langlais  \email{langlais.blake@mayo.edu}
+#' @author Blake Langlais
 #' @keywords data
 #' @format A data frame with 1400 rows and 5 variables
 NULL

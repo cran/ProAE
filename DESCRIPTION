@@ -1,7 +1,7 @@
 Package: ProAE
 Type: Package
 Title: PRO-CTCAE Data Management, Analysis, and Graphical Tools
-Version: 0.1.0
+Version: 0.1.1
 Author: Blake Langlais [aut, cre], Amylou Dueck [aut]
 Maintainer: Blake Langlais <langlais.blake@mayo.edu>
 Description: A collection of tools to facilitate standardized analysis 
@@ -17,6 +17,6 @@ VignetteBuilder: knitr
 Depends: R (>= 3.6.0)
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2021-02-19 20:52:28 UTC; m166125
+Packaged: 2021-02-24 00:15:43 UTC; m166125
 Repository: CRAN
-Date/Publication: 2021-02-22 12:30:02 UTC
+Date/Publication: 2021-02-24 09:50:03 UTC
