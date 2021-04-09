@@ -80,6 +80,24 @@ NULL
 #' @format A data frame with 1400 rows and 5 variables
 NULL
 
+#' PRO-CTCAE data reflecting cyclical drug toxicity
+#'
+#' Simulated example data where the drug group experiences cyclicly toxicity post-treatment administration
+#'
+#' \itemize{
+#'   \item id. Subject identifier
+#'   \item Cycle. Time variable denoting visits/cycles (1-10)
+#'   \item arm. Treatment groups include drug and placebo0
+#'   \item PROCTCAE_78A_SC. PRO-CTCAE frequency item for nosebleeds
+#'   \item PROCTCAE_78B_SC. PRO-CTCAE severity item for nosebleeds
+#' }
+#'
+#' @name tox_cyclic
+#' @docType data
+#' @author Blake Langlais
+#' @keywords data
+#' @format A data frame with 1400 rows and 5 variables
+NULL
 #' PRO-CTCAE data reflecting late incipient drug toxicity
 #'
 #' Simulated example data where the drug group experiences late incipient toxicity towards the end of the treatment period.

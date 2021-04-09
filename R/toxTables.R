@@ -34,6 +34,13 @@
 #'   if there are only two arms in the data.frame specified. This option will
 #'   countermand options called with the \code{test} parameter. Defaults to
 #'   \code{FALSE}.
+#' @param risk_ci A character string. Specify the confidence interval type
+#'   to be constructed for risk differences. Options include: \code{"wald"},
+#'   \code{"agresti-caffo"}, \code{"exact"}. Defaults to \code{wald}. Please
+#'   note: exact confidence intervals are computationally intensive and will
+#'   likely take considerable time and memory to compute.
+#' @param risk_ci_alpha A number between 0 and 1. Specify the alpha level of
+#'   the risk difference confidence intervals. Defaults to \code{0.05}.
 #' @return A list object with data.frame elements for individual items and
 #'   composite grades.
 #' @importFrom magrittr %>%
@@ -48,6 +55,8 @@ toxTables = function(dsn,
                     type="bl_adjusted",
                     test="c",
                     riskdiff=FALSE,
+                    risk_ci = "wald",
+                    risk_ci_alpha = 0.05,
                     arm_var=NA,
                     cycle_limit=NA){
 
@@ -91,6 +100,16 @@ toxTables = function(dsn,
       stop("param baseline_val must be provided as a single number, of class numeric or integer")
     }
   } else {stop("param baseline_val not provided")}
+
+  if(!(risk_ci %in% c("wald", "agresti-caffo", "exact"))){
+    stop("param risk_ci must be one of the fallowing; 'wald' 'agresti-caffo' 'exact'")
+  }
+
+  if(!(is.numeric(risk_ci_alpha))){
+    stop("param risk_ci_alpha must be a numeric value between 0 and 1")
+  } else if(!(0 < risk_ci_alpha & risk_ci_alpha < 1)){
+    stop("param risk_ci_alpha must be a numeric value between 0 and 1")
+  }
 
   ## -- Check for any duplicate individuals within cycles
 
@@ -257,23 +276,85 @@ toxTables = function(dsn,
       # - Risk differences (if called and there are two arms)
       if(riskdiff==TRUE & nrow(table(dsn[,arm_var]))==2){
         # Consider letting user specify alpha level
-        alpha = 0.05
+        alpha = risk_ci_alpha
 
         p1_pres = tab_pres[1,2]/sum(tab_pres[1,])
         p2_pres = tab_pres[2,2]/sum(tab_pres[2,])
         rdiff_est_pres = p1_pres - p2_pres
-        rdiff_se_pres = sqrt( ((p1_pres*(1-p1_pres))/sum(tab_pres[1,])) + ((p2_pres*(1-p2_pres))/sum(tab_pres[2,])) )
-        rdiff_ucl_pres = rdiff_est_pres + (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
-        rdiff_lcl_pres = rdiff_est_pres - (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
+
+        if(risk_ci == "wald"){
+          conf_ints = DescTools::BinomDiffCI(x1=tab_pres[1,2],
+                                             n1=sum(tab_pres[1,]),
+                                             x2=tab_pres[2,2],
+                                             n2=sum(tab_pres[2,]),
+                                             conf.level = 1 - alpha,
+                                             sides = "two.sided",
+                                             method = "wald")
+          rdiff_lcl_pres = conf_ints[2]
+          rdiff_ucl_pres = conf_ints[3]
+        } else if(risk_ci == "agresti-caffo"){
+          conf_ints = DescTools::BinomDiffCI(x1=tab_pres[1,2],
+                                             n1=sum(tab_pres[1,]),
+                                             x2=tab_pres[2,2],
+                                             n2=sum(tab_pres[2,]),
+                                             conf.level = 1 - alpha,
+                                             sides = "two.sided",
+                                             method = "ac")
+          rdiff_lcl_pres = conf_ints[2]
+          rdiff_ucl_pres = conf_ints[3]
+        } else if(risk_ci == "exact"){
+          exactCI = ExactCIdiff::BinomCI(x=tab_pres[1,2],
+                                         n1=sum(tab_pres[1,]),
+                                         y=tab_pres[2,2],
+                                         n2=sum(tab_pres[2,]),
+                                         precision = 0.00001)
+          rdiff_lcl_pres = exactCI$ExactCI[1]
+          rdiff_ucl_pres = exactCI$ExactCI[2]
+        }
+
+        # rdiff_se_pres = sqrt( ((p1_pres*(1-p1_pres))/sum(tab_pres[1,])) + ((p2_pres*(1-p2_pres))/sum(tab_pres[2,])) )
+        # rdiff_ucl_pres = rdiff_est_pres + (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
+        # rdiff_lcl_pres = rdiff_est_pres - (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
 
         rdiff_pres = paste0(100*round(rdiff_est_pres,2),"% (",100*round(rdiff_lcl_pres,2),"%, ",100*round(rdiff_ucl_pres,2),"%)")
 
         p1_sev = tab_sev[1,2]/sum(tab_sev[1,])
         p2_sev = tab_sev[2,2]/sum(tab_sev[2,])
         rdiff_est_sev = p1_sev - p2_sev
-        rdiff_se_sev = sqrt( ((p1_sev*(1-p1_sev))/sum(tab_pres[1,])) + ((p2_sev*(1-p2_sev))/sum(tab_pres[2,])) )
-        rdiff_ucl_sev = rdiff_est_sev + (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
-        rdiff_lcl_sev = rdiff_est_sev - (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
+
+        if(risk_ci == "wald"){
+          conf_ints = DescTools::BinomDiffCI(x1=tab_sev[1,2],
+                                             n1=sum(tab_sev[1,]),
+                                             x2=tab_sev[2,2],
+                                             n2=sum(tab_sev[2,]),
+                                             conf.level = 1 - alpha,
+                                             sides = "two.sided",
+                                             method = "wald")
+          rdiff_lcl_sev = conf_ints[2]
+          rdiff_ucl_sev = conf_ints[3]
+        } else if(risk_ci == "agresti-caffo"){
+          conf_ints = DescTools::BinomDiffCI(x1=tab_sev[1,2],
+                                             n1=sum(tab_sev[1,]),
+                                             x2=tab_sev[2,2],
+                                             n2=sum(tab_sev[2,]),
+                                             conf.level = 1 - alpha,
+                                             sides = "two.sided",
+                                             method = "ac")
+          rdiff_lcl_sev = conf_ints[2]
+          rdiff_ucl_sev = conf_ints[3]
+        } else if(risk_ci == "exact"){
+          exactCI = ExactCIdiff::BinomCI(x=tab_sev[1,2],
+                                         n1=sum(tab_sev[1,]),
+                                         y=tab_sev[2,2],
+                                         n2=sum(tab_sev[2,]),
+                                         precision = 0.00001)
+          rdiff_lcl_sev = exactCI$ExactCI[1]
+          rdiff_ucl_sev = exactCI$ExactCI[2]
+        }
+
+        # rdiff_se_sev = sqrt( ((p1_sev*(1-p1_sev))/sum(tab_pres[1,])) + ((p2_sev*(1-p2_sev))/sum(tab_pres[2,])) )
+        # rdiff_ucl_sev = rdiff_est_sev + (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
+        # rdiff_lcl_sev = rdiff_est_sev - (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
 
         rdiff_sev = paste0(100*round(rdiff_est_sev,2),"% (",100*round(rdiff_lcl_sev,2),"%, ",100*round(rdiff_ucl_sev,2),"%)")
 
@@ -331,7 +412,7 @@ toxTables = function(dsn,
         pv_sev=NA
       }
 
-      # -- Comibe for row output
+      # -- Combine for row output
       if(riskdiff==TRUE & nrow(table(dsn[,arm_var]))==2){
         row_out = data.frame(item_lab = as.character(proctcae_vars$short_label[proctcae_vars$name==item]),
                              arm_n,
@@ -487,23 +568,85 @@ toxTables = function(dsn,
       # - Risk differences (if called and there are two arms)
       if(riskdiff==TRUE & nrow(table(dsn[,arm_var]))==2){
         # Consider letting user specify alpha level
-        alpha = 0.05
+        alpha = risk_ci_alpha
 
         p1_pres = tab_pres[1,2]/sum(tab_pres[1,])
         p2_pres = tab_pres[2,2]/sum(tab_pres[2,])
         rdiff_est_pres = p1_pres - p2_pres
-        rdiff_se_pres = sqrt( ((p1_pres*(1-p1_pres))/sum(tab_pres[1,])) + ((p2_pres*(1-p2_pres))/sum(tab_pres[2,])) )
-        rdiff_ucl_pres = rdiff_est_pres + (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
-        rdiff_lcl_pres = rdiff_est_pres - (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
+
+        if(risk_ci == "wald"){
+          conf_ints = DescTools::BinomDiffCI(x1=tab_pres[1,2],
+                                             n1=sum(tab_pres[1,]),
+                                             x2=tab_pres[2,2],
+                                             n2=sum(tab_pres[2,]),
+                                             conf.level = 1 - alpha,
+                                             sides = "two.sided",
+                                             method = "wald")
+          rdiff_lcl_pres = conf_ints[2]
+          rdiff_ucl_pres = conf_ints[3]
+        } else if(risk_ci == "agresti-caffo"){
+          conf_ints = DescTools::BinomDiffCI(x1=tab_pres[1,2],
+                                             n1=sum(tab_pres[1,]),
+                                             x2=tab_pres[2,2],
+                                             n2=sum(tab_pres[2,]),
+                                             conf.level = 1 - alpha,
+                                             sides = "two.sided",
+                                             method = "ac")
+          rdiff_lcl_pres = conf_ints[2]
+          rdiff_ucl_pres = conf_ints[3]
+        } else if(risk_ci == "exact"){
+          exactCI = ExactCIdiff::BinomCI(x=tab_pres[1,2],
+                                         n1=sum(tab_pres[1,]),
+                                         y=tab_pres[2,2],
+                                         n2=sum(tab_pres[2,]),
+                                         precision = 0.00001)
+          rdiff_lcl_pres = exactCI$ExactCI[1]
+          rdiff_ucl_pres = exactCI$ExactCI[2]
+        }
+
+        # rdiff_se_pres = sqrt( ((p1_pres*(1-p1_pres))/sum(tab_pres[1,])) + ((p2_pres*(1-p2_pres))/sum(tab_pres[2,])) )
+        # rdiff_ucl_pres = rdiff_est_pres + (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
+        # rdiff_lcl_pres = rdiff_est_pres - (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
 
         rdiff_pres = paste0(100*round(rdiff_est_pres,2),"% (",100*round(rdiff_lcl_pres,2),"%, ",100*round(rdiff_ucl_pres,2),"%)")
 
         p1_sev = tab_sev[1,2]/sum(tab_sev[1,])
         p2_sev = tab_sev[2,2]/sum(tab_sev[2,])
         rdiff_est_sev = p1_sev - p2_sev
-        rdiff_se_sev = sqrt( ((p1_sev*(1-p1_sev))/sum(tab_pres[1,])) + ((p2_sev*(1-p2_sev))/sum(tab_pres[2,])) )
-        rdiff_ucl_sev = rdiff_est_sev + (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
-        rdiff_lcl_sev = rdiff_est_sev - (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
+
+        if(risk_ci == "wald"){
+          conf_ints = DescTools::BinomDiffCI(x1=tab_sev[1,2],
+                                             n1=sum(tab_sev[1,]),
+                                             x2=tab_sev[2,2],
+                                             n2=sum(tab_sev[2,]),
+                                             conf.level = 1 - alpha,
+                                             sides = "two.sided",
+                                             method = "wald")
+          rdiff_lcl_sev = conf_ints[2]
+          rdiff_ucl_sev = conf_ints[3]
+        } else if(risk_ci == "agresti-caffo"){
+          conf_ints = DescTools::BinomDiffCI(x1=tab_sev[1,2],
+                                             n1=sum(tab_sev[1,]),
+                                             x2=tab_sev[2,2],
+                                             n2=sum(tab_sev[2,]),
+                                             conf.level = 1 - alpha,
+                                             sides = "two.sided",
+                                             method = "ac")
+          rdiff_lcl_sev = conf_ints[2]
+          rdiff_ucl_sev = conf_ints[3]
+        } else if(risk_ci == "exact"){
+          exactCI = ExactCIdiff::BinomCI(x=tab_sev[1,2],
+                                         n1=sum(tab_sev[1,]),
+                                         y=tab_sev[2,2],
+                                         n2=sum(tab_sev[2,]),
+                                         precision = 0.00001)
+          rdiff_lcl_sev = exactCI$ExactCI[1]
+          rdiff_ucl_sev = exactCI$ExactCI[2]
+        }
+
+        # rdiff_se_sev = sqrt( ((p1_sev*(1-p1_sev))/sum(tab_pres[1,])) + ((p2_sev*(1-p2_sev))/sum(tab_pres[2,])) )
+        # rdiff_ucl_sev = rdiff_est_sev + (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
+        # rdiff_lcl_sev = rdiff_est_sev - (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
 
         rdiff_sev = paste0(100*round(rdiff_est_sev,2),"% (",100*round(rdiff_lcl_sev,2),"%, ",100*round(rdiff_ucl_sev,2),"%)")
 

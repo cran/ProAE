@@ -12,6 +12,8 @@ toxTables(
   type = "bl_adjusted",
   test = "c",
   riskdiff = FALSE,
+  risk_ci = "wald",
+  risk_ci_alpha = 0.05,
   arm_var = NA,
   cycle_limit = NA
 )
@@ -47,6 +49,15 @@ comparing rates among arms. Options include: \code{"c"} = chi square,
 if there are only two arms in the data.frame specified. This option will
 countermand options called with the \code{test} parameter. Defaults to
 \code{FALSE}.}
+
+\item{risk_ci}{A character string. Specify the confidence interval type
+to be constructed for risk differences. Options include: \code{"wald"},
+\code{"agresti-caffo"}, \code{"exact"}. Defaults to \code{wald}. Please
+note: exact confidence intervals are computationally intensive and will
+likely take considerable time and memory to compute.}
+
+\item{risk_ci_alpha}{A number between 0 and 1. Specify the alpha level of
+the risk difference confidence intervals. Defaults to \code{0.05}.}
 
 \item{arm_var}{A character string. Name of arm variable differentiating
 treatment groups. Must be character or factor class. Overall frequencies

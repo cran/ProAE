@@ -165,7 +165,7 @@ toxFigures = function(dsn,
   proctcae_vars[, ] = lapply(proctcae_vars[, ], as.character)
 
   # ================================================================
-  # ==== ACCOMMODATION FOR 27A HAIR LOSs AMOUNT =====================
+  # ==== ACCOMMODATION FOR 27A HAIR LOSS AMOUNT ====================
   # ================================================================
   ## -- Item 27 asks about hair loss and is referenced as an 'amount'
   ## -- However this item utilizes the Interference response bank.
@@ -477,29 +477,34 @@ toxFigures = function(dsn,
     facets = factor(unique(plot_combined0$lab), levels = c("Frequency", "Severity", "Interference", "Composite"))
 
     foot_note = ""
-    ptsize1="12pt"
-    ptsize2="16pt"
-    for (k in facets){ #U23CD
+    if(as.numeric(R.Version()$major)<=3){
+      ptsize1="15pt"
+      ptsize2="10pt"
+    } else if(as.numeric(R.Version()$major)>3){
+        ptsize1="12pt"
+        ptsize2="16pt"
+      }
+    for (k in facets){
       if(k=="Frequency"){
-        freq0 = paste0("<span style='font-size:",ptsize1,"'>\U23F9 </span> Never   /   ")
-        freq1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, ";'>\U23F9</span>Rarely   /   ")
-        freq2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U23F9</span>Occasionally   /   ")
-        freq3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U23F9</span>Frequently   /   ")
-        freq4 = paste0("<span style='font-size:",ptsize2,";color:", item_col4, ";'>\U23F9</span>Almost constantly")
+        freq0 = paste0("<span style='font-size:",ptsize1,"'>\U23CD </span>Never /   ")
+        freq1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, ";'>\U25A0</span> Rarely   /   ")
+        freq2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U25A0</span> Occasionally   /   ")
+        freq3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U25A0</span> Frequently   /   ")
+        freq4 = paste0("<span style='font-size:",ptsize2,";color:", item_col4, ";'>\U25A0</span> Almost constantly")
         foot_note = paste0(foot_note, "**Frequency:** ", freq0, freq1, freq2, freq3, freq4, "<br>")
       } else if(k=="Severity"){
-        sev0 = paste0("<span style='font-size:",ptsize1,";'>\U23F9 </span> None  /  ")
-        sev1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, "'>\U23F9</span>  Mild   /   ")
-        sev2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U23F9</span>Moderate   /   ")
-        sev3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U23F9</span>Severe   /   ")
-        sev4 = paste0("<span style='font-size:",ptsize2,";color:", item_col4, ";'>\U23F9</span>Very severe")
+        sev0 = paste0("<span style='font-size:",ptsize1,";'>\U23CD </span>None  /  ")
+        sev1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, "'>\U25A0</span>  Mild   /   ")
+        sev2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U25A0</span> Moderate   /   ")
+        sev3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U25A0</span> Severe   /   ")
+        sev4 = paste0("<span style='font-size:",ptsize2,";color:", item_col4, ";'>\U25A0</span> Very severe")
         foot_note = paste0(foot_note, "**Severity:** ", sev0, sev1, sev2, sev3, sev4, "<br>")
       } else if(k=="Interference"){
-        int0 = paste0("<span style='font-size:",ptsize1,";'>\U23F9 </span> Not at all  /  ")
-        int1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, ";'>\U23F9</span>A little bit   /   ")
-        int2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U23F9</span>Somewhat   /   ")
-        int3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U23F9</span>Quite a bit   /   ")
-        int4 = paste0("<span style='font-size:",ptsize2,";color:", item_col4, ";'>\U23F9</span>Very much")
+        int0 = paste0("<span style='font-size:",ptsize1,";'>\U23CD </span>Not at all  /  ")
+        int1 = paste0("<span style='font-size:",ptsize2,";color:", item_col1, ";'>\U25A0</span> A little bit   /   ")
+        int2 = paste0("<span style='font-size:",ptsize2,";color:", item_col2, ";'>\U25A0</span> Somewhat   /   ")
+        int3 = paste0("<span style='font-size:",ptsize2,";color:", item_col3, ";'>\U25A0</span> Quite a bit   /   ")
+        int4 = paste0("<span style='font-size:",ptsize2,";color:", item_col4, ";'>\U25A0</span> Very much")
 
         # ================================================================
         # ==== ACCOMMODATION FOR 27A HAIR LOSs AMOUNT =====================
@@ -514,10 +519,10 @@ toxFigures = function(dsn,
         # ================================================================
 
       } else if(k=="Composite"){
-        comp0 = paste0("<span style='font-size:",ptsize1,";'>\U23CD </span> 0  /  ")
-        comp1 = paste0("<span style='font-size:",ptsize2,";color:", comp_col1 ,";'>\U23F9</span>1  /  ")
-        comp2 = paste0("<span style='font-size:",ptsize2,";color:", comp_col2 ,";'>\U23F9</span>2  /  ")
-        comp3 = paste0("<span style='font-size:",ptsize2,";color:", comp_col3 ,";'>\U23F9</span>3 ")
+        comp0 = paste0("<span style='font-size:",ptsize1,";'>\U23CD </span>0  /  ")
+        comp1 = paste0("<span style='font-size:",ptsize2,";color:", comp_col1 ,";'>\U25A0</span> 1  /  ")
+        comp2 = paste0("<span style='font-size:",ptsize2,";color:", comp_col2 ,";'>\U25A0</span> 2  /  ")
+        comp3 = paste0("<span style='font-size:",ptsize2,";color:", comp_col3 ,";'>\U25A0</span> 3 ")
         foot_note = paste0(foot_note, "**Composite Grade:** ", comp0, comp1, comp2, comp3, "<br>")
       }
     }
@@ -541,21 +546,28 @@ toxFigures = function(dsn,
     if(label %in% c(2,3)){
       foot_symbol = "(n)"
       foot_type = "number"
+      y_scale_lab = c("0","25","50","75","100", "n ")
     }
     if(label %in% c(4,5)){
       foot_symbol = "(%)"
       foot_type = "percent"
+      y_scale_lab = c("0","25","50","75","100", "% ")
     }
 
     if(label==1){
       label_foot = "Column labels (n) show the number of subjects with an observed symptom score or grade.<br>"
+      y_scale_lab = c("0","25","50","75","100", "n ")
     } else if (label %in% c(2, 3, 4, 5)){
       label_foot = paste0("Column labels ", foot_symbol, " show the ", foot_type,
                           " of subjects with symptom score or grade ",
                           foot_grade," or greater.<br>")
     }
 
-    foot_note = paste0(foot_note, label_foot, foot1, foot2a, foot2b)
+    if(cycles_only==TRUE){
+      foot_note = paste0(foot_note, label_foot)
+    } else if(cycles_only==FALSE){
+      foot_note = paste0(foot_note, label_foot, foot1, foot2a, foot2b)
+    }
 
     ## ----------------------------------------------------------------
     ## -- Conditional ggplot object combinations
@@ -773,7 +785,7 @@ toxFigures = function(dsn,
 
 
           ggplot2::geom_text(ggplot2::aes(y= 1.13, label=bar_lab_opt), size=3, na.rm=TRUE) +
-          ggplot2::scale_y_continuous(labels = c("0","25","50","75","100", "n "),
+          ggplot2::scale_y_continuous(labels = y_scale_lab,
                                       breaks = c(0, .25, .5, .75, 1, 1.13),
                                       limits = c(0, 1.14)) +
 
@@ -819,7 +831,7 @@ toxFigures = function(dsn,
           ggplot2::geom_hline(yintercept=1.04, linetype="solid", color = "darkgrey") +
 
           ggplot2::geom_text(ggplot2::aes(y= 1.13, label=bar_lab_opt), size=3, na.rm=TRUE) +
-          ggplot2::scale_y_continuous(labels = c("0","25","50","75","100", "n "),
+          ggplot2::scale_y_continuous(labels = y_scale_lab,
                                       breaks = c(0, .25, .5, .75, 1, 1.13),
                                       limits = c(0, 1.14)) +
 
@@ -866,7 +878,7 @@ toxFigures = function(dsn,
           ggplot2::geom_hline(yintercept=1.04, linetype="solid", color = "darkgrey") +
 
           ggplot2::geom_text(ggplot2::aes(y= 1.13, label=bar_lab_opt), size=3, na.rm=TRUE) +
-          ggplot2::scale_y_continuous(labels = c("0","25","50","75","100", "n "),
+          ggplot2::scale_y_continuous(labels = y_scale_lab,
                                       breaks = c(0, .25, .5, .75, 1, 1.13),
                                       limits = c(0, 1.14)) +
 
