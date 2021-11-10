@@ -14,7 +14,7 @@
 #' @param baseline_val A number indicating the expected baseline cycle/time
 #'   point.
 #' @param arm_var A character string. Name of arm variable differentiating
-#'   treatment groups. Must be character or factor class. Overall frequencies
+#'   treatment groups. Must be character or factor class. Overall AUC
 #'   will be reported if no arm/grouping variable is provided. Defaults to
 #'   \code{NA}.
 #' @param plot_limit A number. Limit the number of cycles to be plotted up to
@@ -29,7 +29,7 @@
 #'   within each cycle (symptom grade 0 or higher), \code{2} = sample size (n)
 #'   within each cycle with present symptoms (symptom grade > 0), \code{3} =
 #'   sample size (n) within each cycle with severe symptoms (symptom grade >=
-#'   3), \code{4} = percent of subjects (%) within each cycle with present
+#'   3), \code{4} = percent of subjects within each cycle with present
 #'   symptoms (symptom grade > 0), \code{5} = percent of subjects within each
 #'   cycle with severe symptoms (symptom grade >= 3). No labels will be applied
 #'   if not specified. Defaults to \code{NA}.
@@ -62,8 +62,7 @@
 #'   construct the ggplot figure, available via \code{plot_data}.
 #' @importFrom magrittr %>%
 #' @examples
-#' # --- Simulate example PRO-CTCAE data
-#' fig_acute = toxFigures(dsn = ProAE::tox_acute,
+#' fig_acute = toxFigures(dsn = ProAE::tox_acute[c(1:300, 1101:1400),],
 #'  cycle_var = "Cycle",
 #'  baseline_val = 1,
 #'  arm_var = "arm",
@@ -92,8 +91,6 @@ toxFigures = function(dsn,
                      x_lab_hjust=0,
                      x_label = "Randomized Treatment Assignment",
                      plot_data=FALSE){
-
-
 
   # ----------------------------------------------------------------
   # -- Checks 1/2
@@ -477,13 +474,9 @@ toxFigures = function(dsn,
     facets = factor(unique(plot_combined0$lab), levels = c("Frequency", "Severity", "Interference", "Composite"))
 
     foot_note = ""
-    if(as.numeric(R.Version()$major)<=3){
-      ptsize1="15pt"
-      ptsize2="10pt"
-    } else if(as.numeric(R.Version()$major)>3){
-        ptsize1="12pt"
-        ptsize2="16pt"
-      }
+    ptsize1="15pt"
+    ptsize2="10pt"
+
     for (k in facets){
       if(k=="Frequency"){
         freq0 = paste0("<span style='font-size:",ptsize1,"'>\U23CD </span>Never /   ")
@@ -609,7 +602,7 @@ toxFigures = function(dsn,
     if(label==0){
 
       # ----------------------------------------------------------------
-      # -- Individual and composite items
+      # --
       # ----------------------------------------------------------------
       if("Composite" %in% unique(plot_combined0$lab) &
          sum(c("Frequency", "Severity", "Interference", "Amount") %in% unique(plot_combined0$lab))>0){
@@ -621,17 +614,19 @@ toxFigures = function(dsn,
                                      limits = names(colset1),
                                      guide = ggplot2::guide_legend(order = 2)) +
           ggplot2::scale_color_manual(values = colset1_line) +
-          ggplot2::geom_bar(ggplot2::aes(fill = as.factor(grade_item), color=as.factor(grade_item)), position = "fill", width = .8) +
+          ggplot2::geom_bar(data = plot_combined0[!is.na(plot_combined0$grade_item),],
+                            ggplot2::aes(fill = as.factor(grade_item), color=as.factor(grade_item)), position = "fill", width = .8) +
+
           ggnewscale::new_scale(new_aes = "fill") +
           ggnewscale::new_scale(new_aes = "color") +
 
-
-          ## -- Composite items
+          # ## -- Composite items
           ggplot2::scale_fill_manual(values = colset2,
                                      limits = names(colset2),
                                      guide = ggplot2::guide_legend(order = 3)) +
           ggplot2::scale_color_manual(values = colset2_line) +
-          ggplot2::geom_bar(ggplot2::aes(fill = as.factor(grade_comp), color=as.factor(grade_comp)), position = "fill", width = .8) +
+          ggplot2::geom_bar(data = plot_combined0[!is.na(plot_combined0$grade_comp),],
+                            ggplot2::aes(fill = as.factor(grade_comp), color=as.factor(grade_comp)), position = "fill", width = .8) +
 
           ggplot2:: scale_y_continuous(labels = c("0","25","50","75","100"),
                                        breaks = c(0, .25, .5, .75, 1),
@@ -768,7 +763,8 @@ toxFigures = function(dsn,
                                      limits = names(colset1),
                                      guide = ggplot2::guide_legend(order = 2)) +
           ggplot2::scale_color_manual(values = colset1_line) +
-          ggplot2::geom_bar(ggplot2::aes(fill = as.factor(grade_item), color=as.factor(grade_item)), position = "fill", width = .8) +
+          ggplot2::geom_bar(data = plot_combined0[!is.na(plot_combined0$grade_item),],
+                            ggplot2::aes(fill = as.factor(grade_item), color=as.factor(grade_item)), position = "fill", width = .8) +
           ggnewscale::new_scale(new_aes = "fill") +
           ggnewscale::new_scale(new_aes = "color") +
 
@@ -778,7 +774,8 @@ toxFigures = function(dsn,
                                      limits = names(colset2),
                                      guide = ggplot2::guide_legend(order = 3)) +
           ggplot2::scale_color_manual(values = colset2_line) +
-          ggplot2::geom_bar(ggplot2::aes(fill = as.factor(grade_comp), color=as.factor(grade_comp)), position = "fill", width = .8) +
+          ggplot2::geom_bar(data = plot_combined0[!is.na(plot_combined0$grade_comp),],
+                            ggplot2::aes(fill = as.factor(grade_comp), color=as.factor(grade_comp)), position = "fill", width = .8) +
 
           ## -- Customize
           ggplot2::geom_hline(yintercept=1.04, linetype="solid", color = "darkgrey") +
@@ -913,7 +910,6 @@ toxFigures = function(dsn,
     if(plot_data == TRUE){
       list_out[[i]][[3]] = plot_combined0[, !(names(plot_combined0) %in% "null")]
     }
-
   }
 
   ## -- Reference table for user to view the indexing of PRO-CTCAE item groups withing the list output

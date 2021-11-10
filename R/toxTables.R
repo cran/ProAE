@@ -36,7 +36,7 @@
 #'   \code{FALSE}.
 #' @param risk_ci A character string. Specify the confidence interval type
 #'   to be constructed for risk differences. Options include: \code{"wald"},
-#'   \code{"agresti-caffo"}, \code{"exact"}. Defaults to \code{wald}. Please
+#'   \code{"agresti-caffo"}, \code{"exact"}. Defaults to \code{"wald"}. Please
 #'   note: exact confidence intervals are computationally intensive and will
 #'   likely take considerable time and memory to compute.
 #' @param risk_ci_alpha A number between 0 and 1. Specify the alpha level of

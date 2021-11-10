@@ -37,7 +37,7 @@ ID.}
 point.}
 
 \item{arm_var}{A character string. Name of arm variable differentiating
-treatment groups. Must be character or factor class. Overall frequencies
+treatment groups. Must be character or factor class. Overall AUC
 will be reported if no arm/grouping variable is provided. Defaults to
 \code{NA}.}
 
@@ -55,7 +55,7 @@ shown on the y-axis. Label options include: \code{1} = sample size (n)
 within each cycle (symptom grade 0 or higher), \code{2} = sample size (n)
 within each cycle with present symptoms (symptom grade > 0), \code{3} =
 sample size (n) within each cycle with severe symptoms (symptom grade >=
-3), \code{4} = percent of subjects (%) within each cycle with present
+3), \code{4} = percent of subjects within each cycle with present
 symptoms (symptom grade > 0), \code{5} = percent of subjects within each
 cycle with severe symptoms (symptom grade >= 3). No labels will be applied
 if not specified. Defaults to \code{NA}.}
@@ -101,8 +101,7 @@ Data format should be in 'long' format, where each PRO-CTCAE item is a
 	  variable/column.
 }
 \examples{
-# --- Simulate example PRO-CTCAE data
-fig_acute = toxFigures(dsn = ProAE::tox_acute,
+fig_acute = toxFigures(dsn = ProAE::tox_acute[c(1:300, 1101:1400),],
  cycle_var = "Cycle",
  baseline_val = 1,
  arm_var = "arm",

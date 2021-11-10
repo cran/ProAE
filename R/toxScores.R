@@ -250,7 +250,8 @@ toxScores = function(dsn, reformat=FALSE, impute=FALSE, composites=FALSE, short_
 
             dsn2[paste0("PROCTCAE_",i,"_COMP")] = NA
 
-            for(j in 1:nrow(dsn2)){
+            for(
+              j in 1:nrow(dsn2)){
 
               # If row-wise A items are non-missing, construct composite
               if(all(!is.na(dsn2[c(paste0("PROCTCAE_",i,c("A"),"_SCL"))][j,]))){
