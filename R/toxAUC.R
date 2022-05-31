@@ -7,8 +7,8 @@
 #' 	  variable/column.
 #'
 #' @param dsn A data.frame object with PRO-CTCAE data
-#' @param id_var A character string.Name of ID variable differentiating each
-#'   PRO-CTCAE survey/participant entered as a quoted string.
+#' @param id_var A character string. Name of ID variable differentiating each
+#'   unique patient.
 #' @param cycle_var A character string. Name of variable differentiating one
 #'   longitudinal/repeated. PRO-CTCAE survey from another, within an individual
 #'   ID.
@@ -33,10 +33,28 @@
 #'   the AUC table. Defaults to \code{2}.
 #' @param overwrite_title A character string. Add main title to plots. Defaults
 #'   to \code{NA}.
+#' @param permute_tests Logical. Calls to calculate p values comparing the
+#'   difference in AUC between two arms using a permutation test. Typical two-
+#'   sided null hypothesis for a permutation test is applied. That is, assigning
+#'   subjects to groups is interchangeable when calculating AUC. Computation
+#'   time may be extensive depending on data size, number of PRO-CTCAE items,
+#'   and number of permutations called. Consider staring out an open window or
+#'   crafting a haiku during this time. Defaults to \code{FALSE}.
+#' @param permute_n A number. The number of permutations to be used for
+#'   permutation tests. Defaults to \code{2000}.
+#' @param bootstrap_ci Logical. Calls to construct alpha-level confidence
+#'   intervals for the difference in AUC between arms. Similar considerations
+#'   for computation time as \code{permute_tests} are recommended here. Defaults
+#'   to \code{FALSE}.
+#' @param bootstrap_ci_alpha A number. Specifies the alpha level for bootstrap
+#'   confidence intervals. Must be between 0 and 1. Defaults to \code{0.05}.
+#' @param bootstrap_n A number. The number of bootstrap interations to be used
+#'   for bootstrap confidence intervals. Defaults to \code{2000}.
+#'
 #' @importFrom magrittr %>%
 #' @examples
 #' \dontrun{
-#' AUC=toxAUC(dsn = ProAE::tox_acute[c(1:300, 1101:1400),1:4],
+#' AUC=toxAUC(dsn = ProAE::tox_acute,
 #' id_var = "id",
 #' cycle_var = "Cycle",
 #' baseline_val = 1)
@@ -55,18 +73,13 @@ toxAUC = function(dsn,
                   tab_ymin=NA,
                   tab_ymax=NA,
                   round_dec = 2,
-                  overwrite_title = NA){
+                  overwrite_title = NA,
+                  permute_tests = FALSE,
+                  permute_n = 2000,
+                  bootstrap_ci = FALSE,
+                  bootstrap_ci_alpha = 0.05,
+                  bootstrap_n = 2000){
 
-  ## -------------------------------------------------------------
-  ## --- Conditional requirement for non-mainstream dependency
-  ## -------------------------------------------------------------
-
-  if (!("ggpattern" %in% rownames(utils::installed.packages()))) {
-    return(paste0(
-        "Please install the package 'ggpattern' using:",
-        "'devtools::install_github('coolbutuseless/ggpattern')'"
-      ))
-    } else {
 
     # ----------------------------------------------------------------
     # --- Checks 1
@@ -245,12 +258,187 @@ toxAUC = function(dsn,
     }
 
     # ------------------------------------------------------------------------------
+    # --- Allow for permutation tests for the difference in AUC between 2 arms (iff 2 arms)
+    # ------------------------------------------------------------------------------
+
+    if(nrow(data.frame(table(dsn[,arm_var]))) == 2 & permute_tests == TRUE){
+
+      perm_dsn = dsn[, c(id_var, arm_var, cycle_var, item)]
+      ids = unique(perm_dsn[,c(id_var, arm_var)])
+
+      for(l in 1:permute_n){
+
+        # randomly assign patient ids to group a or group b
+        ids$arm_rand = sample(ids[,arm_var], length(ids[,arm_var]), replace = FALSE)
+        perm_dat = merge(perm_dsn[,-grep(arm_var, names(perm_dsn))], ids[,c(id_var, "arm_rand")], id_var)
+        arm_var2 = "arm_rand"
+        # # -- Get mean score at each cycle for each arm
+        group_auc_perm = stats::aggregate(data = perm_dat[,c(arm_var2, cycle_var, item)],
+                                   stats::formula(paste0(". ~", arm_var2,"+", cycle_var)),
+                                   mean)
+
+        # -- Initiates data.frames
+        if(l==1){
+          group_out1 = data.frame(arm = unique(group_auc_perm[,arm_var2]))
+          names(group_out1) = arm_var2
+          group_out2 = as.data.frame(matrix(as.numeric(),
+                                            nrow = nrow(group_out1),
+                                            ncol = 1))
+          names(group_out2) = item
+          bladj_group_out_floor_inter_auc = cbind(group_out1, group_out2) #### left off here
+          bladj_group_out_ceiling_inter_auc = cbind(group_out1, group_out2)
+          bladj_group_out_floor_inter_auc_diffs = data.frame()
+          bladj_group_out_ceiling_inter_auc_diffs = data.frame()
+        }
+
+        # --- WORSENING - Baseline adjusted (floor AUC is zero)
+        for(i in unique(group_auc_perm[,arm_var2])){
+          bl_val = group_auc_perm[group_auc_perm[,arm_var2]==i & !is.na(group_auc_perm[,item]) & group_auc_perm[,cycle_var]==baseline_val,item]
+          ints = intersects_fun(bl_val,
+                                x = unique(stats::na.omit(group_auc_perm[group_auc_perm[,arm_var2]==i & !is.na(group_auc_perm[,item]),cycle_var])),
+                                y = group_auc_perm[group_auc_perm[,arm_var2]==i & !is.na(group_auc_perm[,item]),item])
+          t_i = ints[[1]]
+          y_i = ints[[2]] - bl_val
+          y_i[y_i < 0] = 0
+          auc_i = sum( (t_i[2:length(t_i)] - t_i[2:length(t_i)-1]) * (y_i[2:length(t_i)] + y_i[2:length(t_i)-1])/2 )
+          if(l==1){
+            bladj_group_out_floor_inter_auc[bladj_group_out_floor_inter_auc[,arm_var2]==i, item] = auc_i
+            bladj_group_out_floor_inter_auc$iteration = 1
+          } else{
+            run_l = data.frame(arm = i,
+                               item = auc_i,
+                               iteration = l)
+            names(run_l)[1:2] = c(arm_var2, item)
+            bladj_group_out_floor_inter_auc = rbind.data.frame(bladj_group_out_floor_inter_auc, run_l)
+          }
+        }
+        arm1_auc = bladj_group_out_floor_inter_auc[bladj_group_out_floor_inter_auc$iteration==l,item][1]
+        arm2_auc = bladj_group_out_floor_inter_auc[bladj_group_out_floor_inter_auc$iteration==l,item][2]
+        bladj_group_out_floor_inter_auc_diffs = rbind.data.frame(bladj_group_out_floor_inter_auc_diffs,
+                                                                 data.frame(iteration = l,
+                                                                            diff_auc = arm1_auc - arm2_auc))
+
+        # --- IMPROVEMENT - Baseline adjusted (ceiling AUC is zero)
+        for(i in unique(group_auc_perm[,arm_var2])){
+          bl_val = group_auc_perm[group_auc_perm[,arm_var2]==i & !is.na(group_auc_perm[,item]) & group_auc_perm[,cycle_var]==baseline_val,item]
+          ints = intersects_fun(bl_val,
+                                x = unique(stats::na.omit(group_auc_perm[group_auc_perm[,arm_var2]==i & !is.na(group_auc_perm[,item]),cycle_var])),
+                                y = group_auc_perm[group_auc_perm[,arm_var2]==i & !is.na(group_auc_perm[,item]),item])
+          t_i = ints[[1]]
+          y_i = ints[[2]] - bl_val
+          y_i[y_i > 0] = 0
+          auc_i = sum( (t_i[2:length(t_i)] - t_i[2:length(t_i)-1]) * (y_i[2:length(t_i)] + y_i[2:length(t_i)-1])/2 )
+          if(l==1){
+            bladj_group_out_ceiling_inter_auc[bladj_group_out_ceiling_inter_auc[,arm_var2]==i, item] = auc_i
+            bladj_group_out_ceiling_inter_auc$iteration = 1
+          } else{
+            run_l = data.frame(arm = i,
+                               item = auc_i,
+                               iteration = l)
+            names(run_l)[1:2] = c(arm_var2, item)
+            bladj_group_out_ceiling_inter_auc = rbind.data.frame(bladj_group_out_ceiling_inter_auc, run_l)
+          }
+        }
+        arm1_auc = bladj_group_out_ceiling_inter_auc[bladj_group_out_ceiling_inter_auc$iteration==l,item][1]
+        arm2_auc = bladj_group_out_ceiling_inter_auc[bladj_group_out_ceiling_inter_auc$iteration==l,item][2]
+        bladj_group_out_ceiling_inter_auc_diffs = rbind.data.frame(bladj_group_out_ceiling_inter_auc_diffs,
+                                                                   data.frame(iteration = l,
+                                                                              diff_auc = arm1_auc - arm2_auc))
+      }
+    }
+
+    # ------------------------------------------------------------------------------
+    # --- Allow for bootstrap for alpha-level confidence intervals for difference in AUC between 2 arms (diff 2 arms)
+    # ------------------------------------------------------------------------------
+
+    if(nrow(data.frame(table(dsn[,arm_var]))) == 2 & bootstrap_ci == TRUE){
+
+      unique_ids_arm1 = unique(dsn[dsn[,arm_var] == unique(dsn[,arm_var])[1],id_var])
+      unique_ids_arm2 = unique(dsn[dsn[,arm_var] == unique(dsn[,arm_var])[2],id_var])
+
+      for(l in 1:bootstrap_n){
+
+        # -- Create bootstrap sample
+        boot_ids_arm1 = sample(x = unique_ids_arm1, size = length(unique_ids_arm1), replace = TRUE)
+        boot_ids_arm2 = sample(x = unique_ids_arm2, size = length(unique_ids_arm2), replace = TRUE)
+        boot_ids = c(boot_ids_arm1, boot_ids_arm2)
+        boot_dat = c()
+        for(k in 1:length(boot_ids)){
+          id = boot_ids[k]
+          boot_dat = rbind.data.frame(boot_dat, dsn[dsn[,id_var] == id,])
+        }
+
+        # -- Get mean score at each cycle for each arm
+        group_auc_boot = stats::aggregate(data = boot_dat[,c(arm_var, cycle_var, item)],
+                                          stats::formula(paste0(". ~", arm_var,"+", cycle_var)),
+                                   mean)
+
+        if(l==1){
+          group_out1 = data.frame(arm = unique(group_auc_boot[,arm_var]))
+          names(group_out1) = arm_var
+          group_out2 = as.data.frame(matrix(as.numeric(),
+                                            nrow = nrow(group_out1),
+                                            ncol = 1))
+          names(group_out2) = item
+          bladj_group_out_floor_inter_boot = cbind(group_out1, group_out2)
+          bladj_group_out_ceiling_inter_boot = cbind(group_out1, group_out2)
+        }
+
+
+        # --- WORSENING - Baseline adjusted (floor AUC is zero)
+        for(i in unique(group_auc_boot[,arm_var])){
+          bl_val = group_auc_boot[group_auc_boot[,arm_var]==i & !is.na(group_auc_boot[,item]) & group_auc_boot[,cycle_var]==baseline_val,item]
+          ints = intersects_fun(bl_val,
+                                x = unique(stats::na.omit(group_auc_boot[group_auc_boot[,arm_var]==i & !is.na(group_auc_boot[,item]),cycle_var])),
+                                y = group_auc_boot[group_auc_boot[,arm_var]==i & !is.na(group_auc_boot[,item]),item])
+          t_i = ints[[1]]
+          y_i = ints[[2]] - bl_val
+          y_i[y_i < 0] = 0
+          auc_i = sum( (t_i[2:length(t_i)] - t_i[2:length(t_i)-1]) * (y_i[2:length(t_i)] + y_i[2:length(t_i)-1])/2 )
+          if(l==1){
+            bladj_group_out_floor_inter_boot[bladj_group_out_floor_inter_boot[,arm_var]==i, item] = auc_i
+            bladj_group_out_floor_inter_boot$iteration = 1
+          } else{
+            run_l = data.frame(arm = i,
+                               item = auc_i,
+                               iteration = l)
+            names(run_l)[1:2] = c(arm_var, item)
+            bladj_group_out_floor_inter_boot = rbind.data.frame(bladj_group_out_floor_inter_boot, run_l)
+          }
+        }
+
+        # --- IMPROVEMENT - Baseline adjusted (ceiling AUC is zero)
+        for(i in unique(group_auc_boot[,arm_var])){
+          bl_val = group_auc_boot[group_auc_boot[,arm_var]==i & !is.na(group_auc_boot[,item]) & group_auc_boot[,cycle_var]==baseline_val,item]
+          ints = intersects_fun(bl_val,
+                                x = unique(stats::na.omit(group_auc_boot[group_auc_boot[,arm_var]==i & !is.na(group_auc_boot[,item]),cycle_var])),
+                                y = group_auc_boot[group_auc_boot[,arm_var]==i & !is.na(group_auc_boot[,item]),item])
+          t_i = ints[[1]]
+          y_i = ints[[2]] - bl_val
+          y_i[y_i > 0] = 0
+          auc_i = sum( (t_i[2:length(t_i)] - t_i[2:length(t_i)-1]) * (y_i[2:length(t_i)] + y_i[2:length(t_i)-1])/2 )
+          if(l==1){
+            bladj_group_out_ceiling_inter_boot[bladj_group_out_ceiling_inter_boot[,arm_var]==i, item] = auc_i
+            bladj_group_out_ceiling_inter_boot$iteration = 1
+          } else{
+            run_l = data.frame(arm = i,
+                               item = auc_i,
+                               iteration = l)
+            names(run_l)[1:2] = c(arm_var, item)
+            bladj_group_out_ceiling_inter_boot = rbind.data.frame(bladj_group_out_ceiling_inter_boot, run_l)
+          }
+        }
+      }
+    }
+
+
+    # ------------------------------------------------------------------------------
     # --- Line plots with AUC
     # ------------------------------------------------------------------------------
 
     list_out = vector(mode='list', length(ref))
 
-      for(item in ref_labs$name){
+    for(item in ref_labs$name){
       i = ref_labs[ref_labs$name ==item,"index"]
 
       plot_auc = group_auc[,c(arm_var, cycle_var, item)]
@@ -387,6 +575,101 @@ toxAUC = function(dsn,
                             "Worsening [solid area]",
                             "Improvment [striped area]")
 
+        auc_tab_out = as.data.frame(t(anno_tab)[2:3,], stringsAsFactors = FALSE)
+        names(auc_tab_out) = t(anno_tab)[1,]
+        rownames(auc_tab_out) = rownames(t(anno_tab)[2:3,])
+
+        auc_tab_out2 = auc_tab_out
+        anno_tab_dup = anno_tab
+
+        if(permute_tests == TRUE){
+          auc_tab_out[] <- lapply(as.data.frame(t(anno_tab)[2:3,], stringsAsFactors = FALSE), function(x) as.numeric(as.character(x)))
+
+          worse_diff = auc_tab_out[1,1] - auc_tab_out[1,2]
+          worse_pv = sum(abs(bladj_group_out_floor_inter_auc_diffs$diff_auc) >= abs(worse_diff)) / permute_n
+
+          improv_diff = auc_tab_out[2,1] - auc_tab_out[2,2]
+          improv_pv = sum(abs(bladj_group_out_ceiling_inter_auc_diffs$diff_auc) >= abs(improv_diff)) / permute_n
+
+          temp_i = data.frame(auc_tab_out)
+          rownames(temp_i) = NULL
+          AUC_table = cbind.data.frame(item = sub(pattern = sub('^.* ([[:alnum:]]+)$', ' \\1', ref_labs[ref_labs[,"name"]==item, "short_label"]),
+                                                  replacement = "", ref_labs[ref_labs[,"name"]==item, "short_label"]),
+                                       type = sub('^.* ([[:alnum:]]+)$', '\\1', ref_labs[ref_labs[,"name"]==item, "short_label"]),
+                                       AUC_type = sub(" .*$", "", rownames(auc_tab_out)),
+                                       temp_i,
+                                       P = c(worse_pv, improv_pv))
+
+
+          AUC_table_display = AUC_table
+          AUC_table_display$p_fmt = ifelse(AUC_table_display$P == 1, "1.0000",
+                                           ifelse(AUC_table_display$P < 0.0001, "<0.0001",
+                                                  paste0(formatC(round(AUC_table_display$P, digits = 4), format = 'f', flag='0', digits = 4))))
+          AUC_table_display = AUC_table_display[,-6]
+          names(AUC_table_display)[6] = "P"
+
+          anno_tab = data.frame(t(AUC_table_display[,4:6]))
+          anno_tab = cbind.data.frame(names = rownames(anno_tab),anno_tab)
+
+          rownames(anno_tab) = NULL
+          names(anno_tab) = c("",
+                              "Worsening [solid area]",
+                              "Improvment [striped area]")
+        }
+
+
+        if(bootstrap_ci == TRUE){
+
+          if(!(0 < bootstrap_ci_alpha & bootstrap_ci_alpha < 1)){
+            bootstrap_ci_alpha = 0.05
+          }
+
+          auc_tab_out2[] <- lapply(as.data.frame(t(anno_tab_dup)[2:3,], stringsAsFactors = FALSE), function(x) as.numeric(as.character(x)))
+
+          worse_diff = auc_tab_out2[1,1] - auc_tab_out2[1,2]
+          improv_diff = auc_tab_out2[2,1] - auc_tab_out2[2,2]
+
+          worse_boots = stats::reshape(bladj_group_out_floor_inter_boot, timevar=arm_var, idvar=c("iteration"), direction="wide")
+          worse_boots$diff = worse_boots[,2] - worse_boots[,3]
+          worse_boots$resid = worse_boots$diff - worse_diff
+          worse_delta = stats::quantile(worse_boots$resid, c(bootstrap_ci_alpha/2 , 1 - bootstrap_ci_alpha/2))
+
+          improv_boots = stats::reshape(bladj_group_out_ceiling_inter_boot, timevar=arm_var, idvar=c("iteration"), direction="wide")
+          improv_boots$diff = improv_boots[,2] - improv_boots[,3]
+          improv_boots$resid = improv_boots$diff - improv_diff
+          improv_delta = stats::quantile(improv_boots$resid, c(bootstrap_ci_alpha/2 , 1 - bootstrap_ci_alpha/2))
+
+          diff_ci=rbind(paste0(round(worse_diff,round_dec)," (", round(worse_diff-worse_delta[2],round_dec),", ",round(worse_diff-worse_delta[1],round_dec),")"),
+                        paste0(round(improv_diff,round_dec)," (", round(improv_diff-improv_delta[2],round_dec),", ",round(improv_diff-improv_delta[1],round_dec),")"))
+
+          temp_i = data.frame(auc_tab_out2)
+          rownames(temp_i) = NULL
+          AUC_CI = cbind.data.frame(item = sub(pattern = sub('^.* ([[:alnum:]]+)$', ' \\1', ref_labs[ref_labs[,"name"]==item, "short_label"]),
+                                               replacement = "", ref_labs[ref_labs[,"name"]==item, "short_label"]),
+                                    type = sub('^.* ([[:alnum:]]+)$', '\\1', ref_labs[ref_labs[,"name"]==item, "short_label"]),
+                                    AUC_type = sub(" .*$", "", rownames(auc_tab_out2)),
+                                    temp_i,
+                                    diff_ci)
+          names(AUC_CI)[6] = paste0("difference (", 100*round(1-bootstrap_ci_alpha,2),"%CI)")
+          anno_tab_boot = data.frame(t(AUC_CI[,4:6]))
+          anno_tab_boot = cbind.data.frame(names = rownames(anno_tab_boot),anno_tab_boot)
+          rownames(anno_tab_boot) = NULL
+          names(anno_tab_boot) = c("",
+                                   "Worsening [solid area]",
+                                   "Improvment [striped area]")
+
+          if(permute_tests == TRUE){
+            anno_tab = rbind(anno_tab, anno_tab_boot[3,])
+            rownames(anno_tab) = NULL
+            AUC_table = cbind.data.frame(AUC_table, ci = AUC_CI[,6])
+            names(AUC_table)[7] = paste0("difference (", 100*round(1-bootstrap_ci_alpha,2),"%CI)")
+
+          } else {
+            anno_tab = anno_tab_boot
+            AUC_table = AUC_CI
+          }
+        }
+
         ribbon_dat = ribbon_plot[[i]]
 
         ribbon_pattern_dat0 = ribbon_dat[ribbon_dat[,item] <= ribbon_dat$bl_val, ]
@@ -421,6 +704,29 @@ toxAUC = function(dsn,
         # -- Pattern cols
         ribbon_pattern_dat$arm_col = ifelse(ribbon_pattern_dat[,arm_var] == name_arm1, "black", "#E69F00")
         arm_fill_pattern_cols = unique(ribbon_pattern_dat$arm_col)
+
+        # -- Add note for permutation tests
+        if(permute_tests == TRUE & bootstrap_ci == TRUE){
+          caption_lab = paste0("Dashed horizontal line indicates arm-level baseline symptomatic adverse event level\n",
+                               "Positive AUC represents increased symptomatic adverse events from baseline (Worsening)\n",
+                               "Negative AUC represents decreased symptomatic adverse events from baseline (Improvement)\n",
+                               paste0("P values reflect two-sided permutation tests for exchangeability with ", permute_n," replications\n"),
+                               paste0("Condifence intervals constructed via bootstrap with ", bootstrap_n," replications"))
+        } else if(permute_tests == TRUE){
+          caption_lab = paste0("Dashed horizontal line indicates arm-level baseline symptomatic adverse event level\n",
+                               "Positive AUC represents increased symptomatic adverse events from baseline (Worsening)\n",
+                               "Negative AUC represents decreased symptomatic adverse events from baseline (Improvement)\n",
+                               paste0("P values reflect two-sided permutation tests for exchangeability with ", permute_n," replications"))
+        } else if(bootstrap_ci == TRUE){
+          caption_lab = paste0("Dashed horizontal line indicates arm-level baseline symptomatic adverse event level\n",
+                               "Positive AUC represents increased symptomatic adverse events from baseline (Worsening)\n",
+                               "Negative AUC represents decreased symptomatic adverse events from baseline (Improvement)\n",
+                               paste0("Condifence intervals constructed via bootstrap with ", bootstrap_n," replications"))
+        } else {
+          caption_lab = paste0("Dashed horizontal line indicates arm-level baseline symptomatic adverse event level\n",
+                               "Positive AUC represents increased symptomatic adverse events from baseline (Worsening)\n",
+                               "Negative AUC represents decreased symptomatic adverse events from baseline (Improvement)\n")
+        }
 
         figure_i = ggplot2::ggplot(plot_auc, ggplot2::aes_string(x=cycle_var, y=item, group=arm_var, fill=arm_var)) +
           ggplot2::geom_line(ggplot2::aes_string(color=arm_var, linetype=arm_var)) +
@@ -457,23 +763,19 @@ toxAUC = function(dsn,
           ggplot2::scale_fill_manual(values=arm_fill_cols) +
           ggpattern::scale_pattern_color_manual(values=arm_fill_pattern_cols) +
           ggpattern::scale_pattern_fill_manual(values=arm_fill_pattern_cols) +
-          ggplot2::annotation_custom(gridExtra::tableGrob(t(anno_tab)), xmin=0.375*cycle_limit, xmax=0.8125*cycle_limit, ymin=tab_ymin, ymax=tab_ymin) +
+          ggplot2::annotation_custom(gridExtra::tableGrob(t(anno_tab)), xmin=0.38*cycle_limit, xmax=0.8125*cycle_limit, ymin=tab_ymin, ymax=tab_ymin) +
           ggplot2::theme_bw() +
           ggplot2::ggtitle(ifelse(is.na(overwrite_title),
                          paste0(item_title, ": Baseline adjusted AUC"),
                          overwrite_title)) +
-          ggplot2::labs(caption = paste0("Dashed horizontal line indicates arm-level baseline symptomatic adverse event level\n",
-                                "Positive AUC represents increased symptomatic adverse events from baseline (Worsening)\n",
-                                "Negative AUC represents decreased symptomatic adverse events from baseline (Improvement)\n")) +
+          ggplot2::labs(caption = caption_lab) +
 
           ggplot2::theme(legend.position = c(.15,.85),
                 legend.background = ggplot2::element_rect(fill = "white", color = "black"),
                 legend.title = ggplot2::element_blank(),
                 plot.caption = ggplot2::element_text(hjust = 0, size = 10))
 
-        auc_tab_out = as.data.frame(t(anno_tab)[2:3,], stringsAsFactors = FALSE)
-        names(auc_tab_out) = t(anno_tab)[1,]
-        rownames(auc_tab_out) = rownames(t(anno_tab)[2:3,])
+
       } else if(nrow(bl_dat)==3){
         bl_arm1 = bl_dat[1,item]
         name_arm1 = bl_dat[1,arm_var]
@@ -731,14 +1033,25 @@ toxAUC = function(dsn,
         names(auc_tab_out) = t(anno_tab)[1,]
         rownames(auc_tab_out) = rownames(t(anno_tab)[2:3,])
       }
+          # ------------------------------------------------------------------------------
+          # --- Allow for permutation tests for the difference in AUC between 2 arms (iff 2 arms)
+          # ------------------------------------------------------------------------------
 
-      auc_tab_out[] <- lapply(auc_tab_out, function(x) as.numeric(as.character(x)))
+      if(nrow(bl_dat) == 2 & permute_tests == TRUE){
 
-      list_out[[i]] = list()
-      list_out[[i]][[1]] = ref_labs[ref_labs[,"name"]==item, "short_label"]
-      list_out[[i]][[2]] = figure_i
-      list_out[[i]][[3]] = auc_tab_out
-    }
+        list_out[[i]] = list()
+        list_out[[i]][[1]] = ref_labs[ref_labs[,"name"]==item, "short_label"]
+        list_out[[i]][[2]] = figure_i
+        list_out[[i]][[3]] = AUC_table
+      } else{
+
+        auc_tab_out[] <- lapply(auc_tab_out, function(x) as.numeric(as.character(x)))
+
+        list_out[[i]] = list()
+        list_out[[i]][[1]] = ref_labs[ref_labs[,"name"]==item, "short_label"]
+        list_out[[i]][[2]] = figure_i
+        list_out[[i]][[3]] = auc_tab_out
+      }
 
     ## -- Reference table
     ref_out = ref_labs[,c("index", "short_label")]

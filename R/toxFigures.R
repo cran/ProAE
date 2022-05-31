@@ -9,7 +9,7 @@
 #' @param id_var A character string.Name of ID variable differentiating each
 #'   PRO-CTCAE survey/participant entered as a quoted string.
 #' @param cycle_var A character string. Name of variable differentiating one
-#'   longitudinal/repeated. PRO-CTCAE survey from another, within an individual
+#'   longitudinal/repeated PRO-CTCAE survey from another, within an individual
 #'   ID.
 #' @param baseline_val A number indicating the expected baseline cycle/time
 #'   point.
@@ -24,7 +24,7 @@
 #'   frequency bars. Options include: 1 = Blue and red color shading, 2 =
 #'   qualitative color shades (color blind friendly), 3 = black and white.
 #'   Defaults to 1.
-#' @param label A number. Label frequency bars with sample size (n) or percent
+#' @param bar_label A number. Label frequency bars with sample size (n) or percent
 #'   shown on the y-axis. Label options include: \code{1} = sample size (n)
 #'   within each cycle (symptom grade 0 or higher), \code{2} = sample size (n)
 #'   within each cycle with present symptoms (symptom grade > 0), \code{3} =
@@ -33,6 +33,14 @@
 #'   symptoms (symptom grade > 0), \code{5} = percent of subjects within each
 #'   cycle with severe symptoms (symptom grade >= 3). No labels will be applied
 #'   if not specified. Defaults to \code{NA}.
+#' @param cycle_label Logical. Assign custom labels to cycles/time point. If
+#'   \code{TRUE}, the \code{cycle_vals} and \code{cycle_labs} must also be specified.
+#' @param cycle_vals Numeric column vector. Vector of values seen within the
+#'   \code{cycle_var} variable. Must be same length of \code{cycle_labs}. Defaults
+#'   to \code{NA}.
+#' @param cycle_labs Character column vector. Vector of labels to be mapped to
+#'   the associated \code{cycle_vals}. Must be same length of \code{cycle_vals}.
+#'   Defaults to \code{NA}.
 #' @param summary_only Logical. Only display the summary measures in figures /
 #'   Suppress the individual time points from plotting. Defaults to
 #'   \code{FALSE}.
@@ -51,23 +59,21 @@
 #' @param x_lab_hjust A number. A ggplot2 object option. Allows the user to
 #'   horizontally adjusts the x axis labels in order to fit arm names. Defaults
 #'   to \code{0}.
-#' @param plot_data Logical. Return the data used to construct plots as element
-#'   of the returned object. Defaults to \code{FALSE}.
+#' @param footnote_break Logical. Add a line break to the footnote Defaults to
+#'   \code{FALSE}.
 #' @return A list object. The returned object is a (k X 2) or (k x 3) nested
 #'   list. Where k is the number of PRO-CTCAE item groups (e.g. pain, fatigue,
 #'   nausea); list[[1 ... i ... k]]. For each list item there are 2 or 3
 #'   elements. The 1st element of each list item is the name of the PRO-CTCAE
 #'   item group returned as a string. The 2nd element is the PRO-CTCAE figure as
-#'   a ggplot object. The 3rd (and optional) element is the data used to
-#'   construct the ggplot figure, available via \code{plot_data}.
+#'   a ggplot object.
 #' @importFrom magrittr %>%
 #' @examples
-#' fig_acute = toxFigures(dsn = ProAE::tox_acute[c(1:300, 1101:1400),],
+#' fig_acute = toxFigures(dsn = ProAE::tox_acute,
 #'  cycle_var = "Cycle",
 #'  baseline_val = 1,
 #'  arm_var = "arm",
 #'  id_var = "id",
-#'  label = 0,
 #'  x_lab_angle = -45,
 #'  x_lab_vjust =  .3,
 #'  x_lab_hjust = .2,
@@ -83,14 +89,17 @@ toxFigures = function(dsn,
                      arm_var=NA,
                      plot_limit=NA,
                      colors=1,
-                     label=0,
+                     bar_label=0,
+                     cycle_label = FALSE,
+                     cycle_vals = NA,
+                     cycle_labs = NA,
                      summary_only=FALSE,
                      cycles_only=FALSE,
                      x_lab_angle=0,
                      x_lab_vjust=1,
                      x_lab_hjust=0,
                      x_label = "Randomized Treatment Assignment",
-                     plot_data=FALSE){
+                     footnote_break = FALSE){
 
   # ----------------------------------------------------------------
   # -- Checks 1/2
@@ -139,6 +148,16 @@ toxFigures = function(dsn,
     stop(paste0("Duplicate observations were found within id_var and cycle_var combinations (", id_var, " and ", cycle_var, ")"))
   }
 
+  ## -- Check for conflicts with figure options
+  if(cycle_label == TRUE){
+    if(any(is.na(cycle_vals) | is.na(cycle_labs))){
+      stop("params cycle_vals and cycle_labs must be provided while using cycle_label")
+    } else if(length(cycle_vals) != length(cycle_labs)){
+      stop("params cycle_vals and cycle_labs must be the same length column vector")
+    } else if(!is.numeric(cycle_vals) | !is.character(cycle_labs)){
+      stop("params cycle_vals and cycle_labs must be numeric and character vectors, respectively")
+    }
+  }
 
   # ----------------------------------------------------------------
   # -- Defaults
@@ -306,20 +325,20 @@ toxFigures = function(dsn,
       # -- Create labels for the bars
       # ----------------------------------------------------------------
 
-      if(label==0){
+      if(bar_label==0){
         labs = dsn1[,c(cycle_var, arm_var)]
         labs$bar_lab_opt = NA
-      } else if(label==1){
+      } else if(bar_label==1){
         labs = stats::aggregate(dsn1[dsn1[,item]>=0,item],
                                 by=list(dsn1[dsn1[,item]>=0,cycle_var],
                                         dsn1[dsn1[,item]>=0,arm_var]),
                                 FUN=length)
-      } else if(label %in% c(2,4)){
+      } else if(bar_label %in% c(2,4)){
         labs = stats::aggregate(dsn1[dsn1[,item]>0,item],
                                 by=list(dsn1[dsn1[,item]>0,cycle_var],
                                         dsn1[dsn1[,item]>0,arm_var]),
                                 FUN=length)
-      } else if(label %in% c(3,5)){
+      } else if(bar_label %in% c(3,5)){
         labs = stats::aggregate(dsn1[dsn1[,item]>=3,item],
                                 by=list(dsn1[dsn1[,item]>=3,cycle_var],
                                         dsn1[dsn1[,item]>=3,arm_var]),
@@ -338,7 +357,7 @@ toxFigures = function(dsn,
         labs2[is.na(labs2$bar_lab_opt),]$bar_lab_opt = 0
       }
 
-      if(label %in% c(4,5)){
+      if(bar_label %in% c(4,5)){
         labs2[labs2$bar_lab_opt!=0,]$bar_lab_opt=round(labs2[labs2$bar_lab_opt!=0,]$bar_lab_opt/labs2[labs2$bar_lab_opt!=0,]$total,digits=2)*100
       }
 
@@ -522,7 +541,7 @@ toxFigures = function(dsn,
 
     foot1 = "\\*Maximum score or grade reported post-baseline per patient.<br>"
     foot2a = "\\*\\*Maximum score or grade reported post-baseline per patient when"
-    if(summary_only == TRUE){
+    if(summary_only == TRUE || footnote_break == TRUE){
       foot2b = " including only scores<br> that were worse than the patient's baseline score."
     } else {
       foot2b = " including only scores that were worse than the patient's baseline score."
@@ -530,27 +549,27 @@ toxFigures = function(dsn,
 
     # -- Label footnote addition
     label_foot = ""
-    if(label %in% c(2,4)){
+    if(bar_label %in% c(2,4)){
       foot_grade = 1
     }
-    if(label %in% c(3,5)){
+    if(bar_label %in% c(3,5)){
       foot_grade = 3
     }
-    if(label %in% c(2,3)){
+    if(bar_label %in% c(2,3)){
       foot_symbol = "(n)"
       foot_type = "number"
       y_scale_lab = c("0","25","50","75","100", "n ")
     }
-    if(label %in% c(4,5)){
+    if(bar_label %in% c(4,5)){
       foot_symbol = "(%)"
       foot_type = "percent"
       y_scale_lab = c("0","25","50","75","100", "% ")
     }
 
-    if(label==1){
+    if(bar_label==1){
       label_foot = "Column labels (n) show the number of subjects with an observed symptom score or grade.<br>"
       y_scale_lab = c("0","25","50","75","100", "n ")
-    } else if (label %in% c(2, 3, 4, 5)){
+    } else if (bar_label %in% c(2, 3, 4, 5)){
       label_foot = paste0("Column labels ", foot_symbol, " show the ", foot_type,
                           " of subjects with symptom score or grade ",
                           foot_grade," or greater.<br>")
@@ -570,6 +589,12 @@ toxFigures = function(dsn,
     if(!is.na(plot_limit)){
       plot_combined0$cycle_plot_lim = as.integer(gsub("[^0-9]", "", plot_combined0[,cycle_var]))
       plot_combined0=plot_combined0[(!is.na(plot_combined0$cycle_plot_lim)&plot_combined0$cycle_plot_lim<=plot_limit)|plot_combined0[,cycle_var] %in% c("Adjusted**","Maximum*"),]
+    }
+
+    # -- Restrict the cycles to be plotted
+    if(cycle_label == TRUE){
+      names(cycle_labs) = paste0(cycle_var," ", cycle_vals)
+      plot_combined0$cycle_var_v_plot = dplyr::recode(plot_combined0[, "cycle_var_v_plot"], !!!cycle_labs)
     }
 
     # -- Only show summary measures
@@ -599,7 +624,7 @@ toxFigures = function(dsn,
     # ----------------------------------------------------------------
     # -- No labels requested
     # ----------------------------------------------------------------
-    if(label==0){
+    if(bar_label==0){
 
       # ----------------------------------------------------------------
       # --
@@ -747,7 +772,7 @@ toxFigures = function(dsn,
     # ----------------------------------------------------------------
     # -- Labels requested
     # ----------------------------------------------------------------
-    else if(label!=0){
+    else if(bar_label!=0){
 
       # ----------------------------------------------------------------
       # -- Individual and composite items
@@ -907,9 +932,6 @@ toxFigures = function(dsn,
     list_out[[i]] = list()
     list_out[[i]][[1]] = refset[refset$group_rank==i,]$group_lab[1]
     list_out[[i]][[2]] = figure_i
-    if(plot_data == TRUE){
-      list_out[[i]][[3]] = plot_combined0[, !(names(plot_combined0) %in% "null")]
-    }
   }
 
   ## -- Reference table for user to view the indexing of PRO-CTCAE item groups withing the list output

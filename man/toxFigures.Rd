@@ -13,14 +13,17 @@ toxFigures(
   arm_var = NA,
   plot_limit = NA,
   colors = 1,
-  label = 0,
+  bar_label = 0,
+  cycle_label = FALSE,
+  cycle_vals = NA,
+  cycle_labs = NA,
   summary_only = FALSE,
   cycles_only = FALSE,
   x_lab_angle = 0,
   x_lab_vjust = 1,
   x_lab_hjust = 0,
   x_label = "Randomized Treatment Assignment",
-  plot_data = FALSE
+  footnote_break = FALSE
 )
 }
 \arguments{
@@ -30,7 +33,7 @@ toxFigures(
 PRO-CTCAE survey/participant entered as a quoted string.}
 
 \item{cycle_var}{A character string. Name of variable differentiating one
-longitudinal/repeated. PRO-CTCAE survey from another, within an individual
+longitudinal/repeated PRO-CTCAE survey from another, within an individual
 ID.}
 
 \item{baseline_val}{A number indicating the expected baseline cycle/time
@@ -50,7 +53,7 @@ frequency bars. Options include: 1 = Blue and red color shading, 2 =
 qualitative color shades (color blind friendly), 3 = black and white.
 Defaults to 1.}
 
-\item{label}{A number. Label frequency bars with sample size (n) or percent
+\item{bar_label}{A number. Label frequency bars with sample size (n) or percent
 shown on the y-axis. Label options include: \code{1} = sample size (n)
 within each cycle (symptom grade 0 or higher), \code{2} = sample size (n)
 within each cycle with present symptoms (symptom grade > 0), \code{3} =
@@ -59,6 +62,17 @@ sample size (n) within each cycle with severe symptoms (symptom grade >=
 symptoms (symptom grade > 0), \code{5} = percent of subjects within each
 cycle with severe symptoms (symptom grade >= 3). No labels will be applied
 if not specified. Defaults to \code{NA}.}
+
+\item{cycle_label}{Logical. Assign custom labels to cycles/time point. If
+\code{TRUE}, the \code{cycle_vals} and \code{cycle_labs} must also be specified.}
+
+\item{cycle_vals}{Numeric column vector. Vector of values seen within the
+\code{cycle_var} variable. Must be same length of \code{cycle_labs}. Defaults
+to \code{NA}.}
+
+\item{cycle_labs}{Character column vector. Vector of labels to be mapped to
+the associated \code{cycle_vals}. Must be same length of \code{cycle_vals}.
+Defaults to \code{NA}.}
 
 \item{summary_only}{Logical. Only display the summary measures in figures /
 Suppress the individual time points from plotting. Defaults to
@@ -84,8 +98,8 @@ to \code{0}.}
 to \code{"Randomized Treatment Assignment"} if \code{arm_var} is specified,
 defaults to \code{"Overall"} if not \code{arm_var} is specified.}
 
-\item{plot_data}{Logical. Return the data used to construct plots as element
-of the returned object. Defaults to \code{FALSE}.}
+\item{footnote_break}{Logical. Add a line break to the footnote Defaults to
+\code{FALSE}.}
 }
 \value{
 A list object. The returned object is a (k X 2) or (k x 3) nested
@@ -93,20 +107,18 @@ A list object. The returned object is a (k X 2) or (k x 3) nested
   nausea); list[[1 ... i ... k]]. For each list item there are 2 or 3
   elements. The 1st element of each list item is the name of the PRO-CTCAE
   item group returned as a string. The 2nd element is the PRO-CTCAE figure as
-  a ggplot object. The 3rd (and optional) element is the data used to
-  construct the ggplot figure, available via \code{plot_data}.
+  a ggplot object.
 }
 \description{
 Data format should be in 'long' format, where each PRO-CTCAE item is a
 	  variable/column.
 }
 \examples{
-fig_acute = toxFigures(dsn = ProAE::tox_acute[c(1:300, 1101:1400),],
+fig_acute = toxFigures(dsn = ProAE::tox_acute,
  cycle_var = "Cycle",
  baseline_val = 1,
  arm_var = "arm",
  id_var = "id",
- label = 0,
  x_lab_angle = -45,
  x_lab_vjust =  .3,
  x_lab_hjust = .2,

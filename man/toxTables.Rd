@@ -52,9 +52,7 @@ countermand options called with the \code{test} parameter. Defaults to
 
 \item{risk_ci}{A character string. Specify the confidence interval type
 to be constructed for risk differences. Options include: \code{"wald"},
-\code{"agresti-caffo"}, \code{"exact"}. Defaults to \code{"wald"}. Please
-note: exact confidence intervals are computationally intensive and will
-likely take considerable time and memory to compute.}
+and \code{"agresti-caffo"}. Defaults to \code{"wald"}.}
 
 \item{risk_ci_alpha}{A number between 0 and 1. Specify the alpha level of
 the risk difference confidence intervals. Defaults to \code{0.05}.}

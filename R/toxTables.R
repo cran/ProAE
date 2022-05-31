@@ -36,9 +36,7 @@
 #'   \code{FALSE}.
 #' @param risk_ci A character string. Specify the confidence interval type
 #'   to be constructed for risk differences. Options include: \code{"wald"},
-#'   \code{"agresti-caffo"}, \code{"exact"}. Defaults to \code{"wald"}. Please
-#'   note: exact confidence intervals are computationally intensive and will
-#'   likely take considerable time and memory to compute.
+#'   and \code{"agresti-caffo"}. Defaults to \code{"wald"}.
 #' @param risk_ci_alpha A number between 0 and 1. Specify the alpha level of
 #'   the risk difference confidence intervals. Defaults to \code{0.05}.
 #' @return A list object with data.frame elements for individual items and
@@ -101,8 +99,8 @@ toxTables = function(dsn,
     }
   } else {stop("param baseline_val not provided")}
 
-  if(!(risk_ci %in% c("wald", "agresti-caffo", "exact"))){
-    stop("param risk_ci must be one of the fallowing; 'wald' 'agresti-caffo' 'exact'")
+  if(!(risk_ci %in% c("wald", "agresti-caffo"))){
+    stop("param risk_ci must be one of the fallowing; 'wald' 'agresti-caffo'")
   }
 
   if(!(is.numeric(risk_ci_alpha))){
@@ -302,19 +300,7 @@ toxTables = function(dsn,
                                              method = "ac")
           rdiff_lcl_pres = conf_ints[2]
           rdiff_ucl_pres = conf_ints[3]
-        } else if(risk_ci == "exact"){
-          exactCI = ExactCIdiff::BinomCI(x=tab_pres[1,2],
-                                         n1=sum(tab_pres[1,]),
-                                         y=tab_pres[2,2],
-                                         n2=sum(tab_pres[2,]),
-                                         precision = 0.00001)
-          rdiff_lcl_pres = exactCI$ExactCI[1]
-          rdiff_ucl_pres = exactCI$ExactCI[2]
         }
-
-        # rdiff_se_pres = sqrt( ((p1_pres*(1-p1_pres))/sum(tab_pres[1,])) + ((p2_pres*(1-p2_pres))/sum(tab_pres[2,])) )
-        # rdiff_ucl_pres = rdiff_est_pres + (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
-        # rdiff_lcl_pres = rdiff_est_pres - (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
 
         rdiff_pres = paste0(100*round(rdiff_est_pres,2),"% (",100*round(rdiff_lcl_pres,2),"%, ",100*round(rdiff_ucl_pres,2),"%)")
 
@@ -342,19 +328,7 @@ toxTables = function(dsn,
                                              method = "ac")
           rdiff_lcl_sev = conf_ints[2]
           rdiff_ucl_sev = conf_ints[3]
-        } else if(risk_ci == "exact"){
-          exactCI = ExactCIdiff::BinomCI(x=tab_sev[1,2],
-                                         n1=sum(tab_sev[1,]),
-                                         y=tab_sev[2,2],
-                                         n2=sum(tab_sev[2,]),
-                                         precision = 0.00001)
-          rdiff_lcl_sev = exactCI$ExactCI[1]
-          rdiff_ucl_sev = exactCI$ExactCI[2]
         }
-
-        # rdiff_se_sev = sqrt( ((p1_sev*(1-p1_sev))/sum(tab_pres[1,])) + ((p2_sev*(1-p2_sev))/sum(tab_pres[2,])) )
-        # rdiff_ucl_sev = rdiff_est_sev + (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
-        # rdiff_lcl_sev = rdiff_est_sev - (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
 
         rdiff_sev = paste0(100*round(rdiff_est_sev,2),"% (",100*round(rdiff_lcl_sev,2),"%, ",100*round(rdiff_ucl_sev,2),"%)")
 
@@ -594,19 +568,7 @@ toxTables = function(dsn,
                                              method = "ac")
           rdiff_lcl_pres = conf_ints[2]
           rdiff_ucl_pres = conf_ints[3]
-        } else if(risk_ci == "exact"){
-          exactCI = ExactCIdiff::BinomCI(x=tab_pres[1,2],
-                                         n1=sum(tab_pres[1,]),
-                                         y=tab_pres[2,2],
-                                         n2=sum(tab_pres[2,]),
-                                         precision = 0.00001)
-          rdiff_lcl_pres = exactCI$ExactCI[1]
-          rdiff_ucl_pres = exactCI$ExactCI[2]
         }
-
-        # rdiff_se_pres = sqrt( ((p1_pres*(1-p1_pres))/sum(tab_pres[1,])) + ((p2_pres*(1-p2_pres))/sum(tab_pres[2,])) )
-        # rdiff_ucl_pres = rdiff_est_pres + (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
-        # rdiff_lcl_pres = rdiff_est_pres - (stats::qnorm(1-(alpha/2)) * rdiff_se_pres)
 
         rdiff_pres = paste0(100*round(rdiff_est_pres,2),"% (",100*round(rdiff_lcl_pres,2),"%, ",100*round(rdiff_ucl_pres,2),"%)")
 
@@ -634,19 +596,7 @@ toxTables = function(dsn,
                                              method = "ac")
           rdiff_lcl_sev = conf_ints[2]
           rdiff_ucl_sev = conf_ints[3]
-        } else if(risk_ci == "exact"){
-          exactCI = ExactCIdiff::BinomCI(x=tab_sev[1,2],
-                                         n1=sum(tab_sev[1,]),
-                                         y=tab_sev[2,2],
-                                         n2=sum(tab_sev[2,]),
-                                         precision = 0.00001)
-          rdiff_lcl_sev = exactCI$ExactCI[1]
-          rdiff_ucl_sev = exactCI$ExactCI[2]
         }
-
-        # rdiff_se_sev = sqrt( ((p1_sev*(1-p1_sev))/sum(tab_pres[1,])) + ((p2_sev*(1-p2_sev))/sum(tab_pres[2,])) )
-        # rdiff_ucl_sev = rdiff_est_sev + (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
-        # rdiff_lcl_sev = rdiff_est_sev - (stats::qnorm(1-(alpha/2)) * rdiff_se_sev)
 
         rdiff_sev = paste0(100*round(rdiff_est_sev,2),"% (",100*round(rdiff_lcl_sev,2),"%, ",100*round(rdiff_ucl_sev,2),"%)")
 

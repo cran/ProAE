@@ -51,7 +51,11 @@
 #' tox_acute_comp = toxScores(dsn = ProAE::tox_acute, composites = TRUE)
 #' @export
 
-toxScores = function(dsn, reformat=FALSE, impute=FALSE, composites=FALSE, short_labels=FALSE){
+toxScores = function(dsn,
+                     reformat=FALSE,
+                     impute=FALSE,
+                     composites=FALSE,
+                     short_labels=FALSE){
 
   # ----------------------------------------------------------------
   # -- Checks 1/1

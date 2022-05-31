@@ -17,14 +17,19 @@ toxAUC(
   tab_ymin = NA,
   tab_ymax = NA,
   round_dec = 2,
-  overwrite_title = NA
+  overwrite_title = NA,
+  permute_tests = FALSE,
+  permute_n = 2000,
+  bootstrap_ci = FALSE,
+  bootstrap_ci_alpha = 0.05,
+  bootstrap_n = 2000
 )
 }
 \arguments{
 \item{dsn}{A data.frame object with PRO-CTCAE data}
 
-\item{id_var}{A character string.Name of ID variable differentiating each
-PRO-CTCAE survey/participant entered as a quoted string.}
+\item{id_var}{A character string. Name of ID variable differentiating each
+unique patient.}
 
 \item{cycle_var}{A character string. Name of variable differentiating one
 longitudinal/repeated. PRO-CTCAE survey from another, within an individual
@@ -56,6 +61,28 @@ the AUC table. Defaults to \code{2}.}
 
 \item{overwrite_title}{A character string. Add main title to plots. Defaults
 to \code{NA}.}
+
+\item{permute_tests}{Logical. Calls to calculate p values comparing the
+difference in AUC between two arms using a permutation test. Typical two-
+sided null hypothesis for a permutation test is applied. That is, assigning
+subjects to groups is interchangeable when calculating AUC. Computation
+time may be extensive depending on data size, number of PRO-CTCAE items,
+and number of permutations called. Consider staring out an open window or
+crafting a haiku during this time. Defaults to \code{FALSE}.}
+
+\item{permute_n}{A number. The number of permutations to be used for
+permutation tests. Defaults to \code{2000}.}
+
+\item{bootstrap_ci}{Logical. Calls to construct alpha-level confidence
+intervals for the difference in AUC between arms. Similar considerations
+for computation time as \code{permute_tests} are recommended here. Defaults
+to \code{FALSE}.}
+
+\item{bootstrap_ci_alpha}{A number. Specifies the alpha level for bootstrap
+confidence intervals. Must be between 0 and 1. Defaults to \code{0.05}.}
+
+\item{bootstrap_n}{A number. The number of bootstrap interations to be used
+for bootstrap confidence intervals. Defaults to \code{2000}.}
 }
 \description{
 Data format should be in 'long' format, where each PRO-CTCAE item is a
@@ -63,7 +90,7 @@ Data format should be in 'long' format, where each PRO-CTCAE item is a
 }
 \examples{
 \dontrun{
-AUC=toxAUC(dsn = ProAE::tox_acute[c(1:300, 1101:1400),1:4],
+AUC=toxAUC(dsn = ProAE::tox_acute,
 id_var = "id",
 cycle_var = "Cycle",
 baseline_val = 1)
