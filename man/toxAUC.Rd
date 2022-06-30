@@ -81,7 +81,7 @@ to \code{FALSE}.}
 \item{bootstrap_ci_alpha}{A number. Specifies the alpha level for bootstrap
 confidence intervals. Must be between 0 and 1. Defaults to \code{0.05}.}
 
-\item{bootstrap_n}{A number. The number of bootstrap interations to be used
+\item{bootstrap_n}{A number. The number of bootstrap iterations to be used
 for bootstrap confidence intervals. Defaults to \code{2000}.}
 }
 \description{

@@ -48,7 +48,7 @@
 #'   to \code{FALSE}.
 #' @param bootstrap_ci_alpha A number. Specifies the alpha level for bootstrap
 #'   confidence intervals. Must be between 0 and 1. Defaults to \code{0.05}.
-#' @param bootstrap_n A number. The number of bootstrap interations to be used
+#' @param bootstrap_n A number. The number of bootstrap iterations to be used
 #'   for bootstrap confidence intervals. Defaults to \code{2000}.
 #'
 #' @importFrom magrittr %>%
@@ -1053,6 +1053,8 @@ toxAUC = function(dsn,
         list_out[[i]][[3]] = auc_tab_out
       }
 
+    }
+
     ## -- Reference table
     ref_out = ref_labs[,c("index", "short_label")]
     rownames(ref_out) = NULL
@@ -1062,6 +1064,7 @@ toxAUC = function(dsn,
 
     ## -- Object return
     invisible(list_out)
-  }
+
 }
+
 

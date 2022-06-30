@@ -79,7 +79,7 @@ toxSummary <- function(dsn,
   } else {stop("param cycle_var not provided")}
 
   if(!(summary_measure %in% c("max", "max_post_bl", "bl_adjusted", "toxicity_index", "AUC_worsening", "AUC_improvement"))){
-    stop("param summary_measure must be one of the fallowing; 'max', 'max_post_bl', 'bl_adjusted', 'AUC_worsening', 'AUC_improvement'")
+    stop("param summary_measure must be one of the fallowing; 'max', 'max_post_bl', 'toxicity_idex', 'bl_adjusted', 'AUC_worsening', 'AUC_improvement'")
   }
 
   ## -- Checks for summary measures requiring baseline data information.
@@ -221,9 +221,11 @@ toxSummary <- function(dsn,
         for(i in 1:(length(x_tmp)-1)){
           ti = ti + (x_tmp[i+1] / prod((1+x_tmp[1:i])))
           # -- prevent default rounding for large decimal portions
-          # if ti decimal portion approaches 1 break with ti s.e.t. [integer].9999
           if(ti-x_tmp[1] >= 0.9999){
             ti = x_tmp[1] + 0.9999
+            # send warning to console / log that some estimates of the toxicity index were seen to
+            # round out of a logical range, therefore subsequent round was prevented and returned
+            # with estimates of [integer].9999
             break
           }
         }
