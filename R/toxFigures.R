@@ -69,6 +69,7 @@
 #'   a ggplot object.
 #' @importFrom magrittr %>%
 #' @examples
+#' \dontrun{
 #' fig_acute = toxFigures(dsn = ProAE::tox_acute,
 #'  cycle_var = "Cycle",
 #'  baseline_val = 1,
@@ -79,6 +80,7 @@
 #'  x_lab_hjust = .2,
 #'  colors = 2)
 #' fig_acute[[1]]
+#' }
 #' @export
 
 

@@ -114,6 +114,7 @@ Data format should be in 'long' format, where each PRO-CTCAE item is a
 	  variable/column.
 }
 \examples{
+\dontrun{
 fig_acute = toxFigures(dsn = ProAE::tox_acute,
  cycle_var = "Cycle",
  baseline_val = 1,
@@ -124,4 +125,5 @@ fig_acute = toxFigures(dsn = ProAE::tox_acute,
  x_lab_hjust = .2,
  colors = 2)
 fig_acute[[1]]
+}
 }

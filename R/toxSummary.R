@@ -287,12 +287,30 @@ toxSummary <- function(dsn,
       return(list(x2,y2))
     }
 
-    dsn_slice = dsn[,c(id_var, cycle_var, arm_var, dsn_items)]
-
     # -- Group-level AE means data
-    group_auc = stats::aggregate(data = dsn_slice[,c(arm_var, cycle_var, dsn_items)],
-                                 stats::formula(paste0(". ~", arm_var,"+", cycle_var)),
-                                 mean)
+    # -- Only subjects with existing baseline values are considered for AUC calculation.
+    for(ref_i in dsn_items){
+      dsn_slice = dsn[,c(id_var, cycle_var, arm_var, ref_i)]
+      dsn_slice_no_NA = dsn_slice[dsn_slice[,cycle_var]==baseline_val & !is.na(dsn_slice[,ref_i]),]
+      dsn_slice_ids = unique(dsn_slice_no_NA[,id_var])
+
+      dsn_slice = dsn_slice[dsn_slice[,id_var] %in% dsn_slice_ids,]
+
+      if(which(dsn_items == ref_i) == 1){
+        group_auc = stats::aggregate(data = dsn_slice[,c(arm_var, cycle_var, ref_i)],
+                                     stats::formula(paste0(". ~", arm_var,"+", cycle_var)),
+                                     mean)
+      }else if(which(dsn_items == ref_i) > 1){
+        group_auc = merge(group_auc,
+                          stats::aggregate(data = dsn_slice[,c(arm_var, cycle_var, ref_i)],
+                                           stats::formula(paste0(". ~", arm_var,"+", cycle_var)),
+                                           mean),
+                          by = c(arm_var, cycle_var),
+                          all = TRUE)
+      }
+    }
+
+    group_auc = group_auc[with(group_auc, order(group_auc[,cycle_var], group_auc[,arm_var])), ]
 
     # -- Create data frame for AUC to be attached
     group_out1 = data.frame(arm = unique(group_auc[,arm_var]))

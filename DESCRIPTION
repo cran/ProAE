@@ -1,7 +1,7 @@
 Package: ProAE
 Type: Package
 Title: PRO-CTCAE Scoring, Analysis, and Graphical Tools
-Version: 0.2.10
+Version: 0.2.12
 Author: Blake Langlais [aut, cre],
         Brie Noble [ctb],
         Molly Klanderman [ctb],
@@ -19,8 +19,8 @@ Imports: ggplot2, ggnewscale, ggtext, dplyr, Hmisc, magrittr,
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 Depends: R (>= 4.0.0)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.2
 NeedsCompilation: no
-Packaged: 2022-06-30 19:10:26 UTC; m166125
+Packaged: 2023-01-20 20:12:23 UTC; m166125
 Repository: CRAN
-Date/Publication: 2022-06-30 19:40:02 UTC
+Date/Publication: 2023-01-20 20:40:02 UTC

@@ -86,7 +86,8 @@ for bootstrap confidence intervals. Defaults to \code{2000}.}
 }
 \description{
 Data format should be in 'long' format, where each PRO-CTCAE item is a
-	  variable/column.
+	  variable/column. AUC calculations will only include subjects with non-
+	  missing baseline values (within each PRO-CTCAE item).
 }
 \examples{
 \dontrun{
