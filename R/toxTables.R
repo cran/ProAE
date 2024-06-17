@@ -41,8 +41,9 @@
 #' @param risk_ci_alpha A number between 0 and 1. Specify the alpha level of
 #'   the risk difference confidence intervals. Defaults to \code{0.05}.
 #' @return A list object with data.frame elements for individual items and
-#'   composite grades.
+#'   composite scores.
 #' @importFrom magrittr %>%
+#' @importFrom kableExtra add_header_above add_footnote
 #' @examples
 #' toxTables(dsn=ProAE::tox_acute, id_var="id", cycle_var="Cycle", baseline_val=1)
 #' @export
@@ -62,14 +63,6 @@ toxTables = function(dsn,
   # ----------------------------------------------------------------
   # -- Checks 1/2
   # ----------------------------------------------------------------
-
-  ## -- Assign binding for data.frame variables used within dplyr functions as global variables
-
-  base_val = NULL
-  max_val = NULL
-  bl_adjusted = NULL
-  max_post_bl = NULL
-  max = NULL
 
   ## -- Required parameters
 
@@ -190,7 +183,7 @@ toxTables = function(dsn,
     # ----------------------------------------------------------------
     if(is.na(arm_var)){
       dsn2 = dsn1 %>%
-        dplyr::select(id_var, bl_adjusted, max_post_bl, max_val) %>%
+        dplyr::select(dplyr::all_of(id_var), bl_adjusted, max_post_bl, max_val) %>%
         dplyr::group_by(get(id_var)) %>%
         dplyr::slice(1)
 
@@ -249,7 +242,7 @@ toxTables = function(dsn,
 
     } else {
       dsn2 = dsn1 %>%
-        dplyr::select(id_var, arm_var, bl_adjusted, max_post_bl, max_val) %>%
+        dplyr::select(dplyr::all_of(id_var), dplyr::all_of(arm_var), bl_adjusted, max_post_bl, max_val) %>%
         dplyr::group_by(get(id_var)) %>%
         dplyr::slice(1)
 
@@ -463,7 +456,7 @@ toxTables = function(dsn,
       # ----------------------------------------------------------------
 
       dsn2 = dsn1 %>%
-        dplyr::select(id_var, bl_adjusted, max_post_bl, max_val) %>%
+        dplyr::select(dplyr::all_of(id_var), bl_adjusted, max_post_bl, max_val) %>%
         dplyr::group_by(get(id_var)) %>%
         dplyr::slice(1)
 
@@ -523,7 +516,7 @@ toxTables = function(dsn,
     } else {
 
       dsn2 = dsn1 %>%
-        dplyr::select(id_var, arm_var, bl_adjusted, max_post_bl, max_val) %>%
+        dplyr::select(dplyr::all_of(id_var), dplyr::all_of(arm_var), bl_adjusted, max_post_bl, max_val) %>%
         dplyr::group_by(get(id_var)) %>%
         dplyr::slice(1)
 
