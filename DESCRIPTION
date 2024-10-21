@@ -1,13 +1,23 @@
 Package: ProAE
 Type: Package
 Title: PRO-CTCAE Scoring, Analysis, and Graphical Tools
-Version: 1.0.1
-Author: Blake Langlais [aut, cre],
-        Brie Noble [ctb],
-        Mia Truman [ctb],
-        Molly Voss [ctb],
-        Amylou Dueck [aut]
-Maintainer: Blake Langlais <langlais.blake@mayo.edu>
+Version: 1.0.3
+Authors@R: c(person(given = "Blake",
+                    family = "Langlais",
+                    role = c("aut", "cre"),
+                    email = "langlais.blake@mayo.edu"),
+               person(given = "Brie",
+                      family = "Noble",
+                      role = "ctb"),
+               person(given = "Mia",
+                      family = "Truman",
+                      role = "ctb"),
+               person(given = "Molly",
+                      family = "Voss",
+                      role = "ctb"),
+               person(given = "Amylou",
+                      family = "Dueck",
+                      role = "aut"))
 Description: A collection of tools to facilitate standardized analysis 
     and graphical procedures when using the National Cancer Institute’s 
     Patient-Reported Outcomes version of the Common Terminology Criteria for 
@@ -22,6 +32,12 @@ VignetteBuilder: knitr
 Depends: R (>= 4.0.0)
 RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2024-06-17 22:49:46 UTC; m272752
+Packaged: 2024-10-21 17:44:10 UTC; m166125
+Author: Blake Langlais [aut, cre],
+  Brie Noble [ctb],
+  Mia Truman [ctb],
+  Molly Voss [ctb],
+  Amylou Dueck [aut]
+Maintainer: Blake Langlais <langlais.blake@mayo.edu>
 Repository: CRAN
-Date/Publication: 2024-06-17 23:30:03 UTC
+Date/Publication: 2024-10-21 18:10:02 UTC
