@@ -1,14 +1,14 @@
 Package: ProAE
 Type: Package
 Title: PRO-CTCAE Scoring, Analysis, and Graphical Tools
-Version: 1.0.3
+Version: 1.0.4
 Authors@R: c(person(given = "Blake",
                     family = "Langlais",
-                    role = c("aut", "cre"),
-                    email = "langlais.blake@mayo.edu"),
+                    role = "aut"),
                person(given = "Brie",
                       family = "Noble",
-                      role = "ctb"),
+                      role = c("ctb","cre"),
+                      email = "noble.brie@mayo.edu"),
                person(given = "Mia",
                       family = "Truman",
                       role = "ctb"),
@@ -32,12 +32,12 @@ VignetteBuilder: knitr
 Depends: R (>= 4.0.0)
 RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2024-10-21 17:44:10 UTC; m166125
-Author: Blake Langlais [aut, cre],
-  Brie Noble [ctb],
+Packaged: 2026-01-08 19:43:54 UTC; m272752
+Author: Blake Langlais [aut],
+  Brie Noble [ctb, cre],
   Mia Truman [ctb],
   Molly Voss [ctb],
   Amylou Dueck [aut]
-Maintainer: Blake Langlais <langlais.blake@mayo.edu>
+Maintainer: Brie Noble <noble.brie@mayo.edu>
 Repository: CRAN
-Date/Publication: 2024-10-21 18:10:02 UTC
+Date/Publication: 2026-01-08 23:10:02 UTC

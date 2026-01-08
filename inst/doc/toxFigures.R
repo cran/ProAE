@@ -4,9 +4,9 @@ knitr::opts_chunk$set(eval = TRUE, message = FALSE, results = 'asis', comment=''
 options(width = 200)
 
 
-
 ## ----load-data----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 library(ProAE)
+require(knitr)
 
 data(tox_acute)
 

@@ -285,7 +285,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -632,96 +632,59 @@ score.</p>
 <p>We can use the <code>knitr::kable()</code> function to see a simple
 RMarkdown version of the table.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(table_1<span class="sc">$</span>individual)</span></code></pre></div>
+<pre><code>Warning: &#39;xfun::attr()&#39; is deprecated.
+Use &#39;xfun::attr2()&#39; instead.
+See help(&quot;Deprecated&quot;)
+Warning: &#39;xfun::attr()&#39; is deprecated.
+Use &#39;xfun::attr2()&#39; instead.
+See help(&quot;Deprecated&quot;)</code></pre>
 <table>
+<colgroup>
+<col width="18%" />
+<col width="7%" />
+<col width="10%" />
+<col width="10%" />
+<col width="13%" />
+<col width="8%" />
+<col width="9%" />
+<col width="12%" />
+<col width="7%" />
+</colgroup>
 <thead>
 <tr>
-<th style="text-align:left;">
-item_lab
-</th>
-<th style="text-align:right;">
-Drug_n
-</th>
-<th style="text-align:right;">
-Placebo_n
-</th>
-<th style="text-align:left;">
-Drug_pres
-</th>
-<th style="text-align:left;">
-Placebo_pres
-</th>
-<th style="text-align:right;">
-pv_pres
-</th>
-<th style="text-align:left;">
-Drug_sev
-</th>
-<th style="text-align:left;">
-Placebo_sev
-</th>
-<th style="text-align:right;">
-pv_sev
-</th>
+<th align="left">item_lab</th>
+<th align="right">Drug_n</th>
+<th align="right">Placebo_n</th>
+<th align="left">Drug_pres</th>
+<th align="left">Placebo_pres</th>
+<th align="right">pv_pres</th>
+<th align="left">Drug_sev</th>
+<th align="left">Placebo_sev</th>
+<th align="right">pv_sev</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-Nausea Frequency
-</td>
-<td style="text-align:right;">
-70
-</td>
-<td style="text-align:right;">
-70
-</td>
-<td style="text-align:left;">
-63 (90%)
-</td>
-<td style="text-align:left;">
-59 (84%)
-</td>
-<td style="text-align:right;">
-0.3125
-</td>
-<td style="text-align:left;">
-45 (64%)
-</td>
-<td style="text-align:left;">
-34 (49%)
-</td>
-<td style="text-align:right;">
-0.0608
-</td>
+<td align="left">Nausea Frequency</td>
+<td align="right">70</td>
+<td align="right">70</td>
+<td align="left">63 (90%)</td>
+<td align="left">59 (84%)</td>
+<td align="right">0.3125</td>
+<td align="left">45 (64%)</td>
+<td align="left">34 (49%)</td>
+<td align="right">0.0608</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-Nausea Severity
-</td>
-<td style="text-align:right;">
-70
-</td>
-<td style="text-align:right;">
-70
-</td>
-<td style="text-align:left;">
-61 (87%)
-</td>
-<td style="text-align:left;">
-58 (83%)
-</td>
-<td style="text-align:right;">
-0.4777
-</td>
-<td style="text-align:left;">
-50 (71%)
-</td>
-<td style="text-align:left;">
-22 (31%)
-</td>
-<td style="text-align:right;">
-0.0000
-</td>
+<td align="left">Nausea Severity</td>
+<td align="right">70</td>
+<td align="right">70</td>
+<td align="left">61 (87%)</td>
+<td align="left">58 (83%)</td>
+<td align="right">0.4777</td>
+<td align="left">50 (71%)</td>
+<td align="left">22 (31%)</td>
+<td align="right">0.0000</td>
 </tr>
 </tbody>
 </table>
@@ -731,12 +694,18 @@ Nausea Severity
 <p>Further customization can happen using <code>kable()</code> and
 <code>kableExtra()</code> or the data frame can be exported to
 spreadsheet or copy and pasted into a document</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(table_1<span class="sc">$</span>individual,</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>             <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&#39;Item/Attribute&#39;</span>, <span class="st">&#39;Drug&#39;</span>, <span class="st">&#39;Placebo&#39;</span>, <span class="st">&#39;Drug&#39;</span>, <span class="st">&#39;Placebo&#39;</span>, <span class="st">&quot;p&quot;</span>, <span class="st">&quot;Drug&quot;</span>, <span class="st">&quot;Placebo&quot;</span>, <span class="st">&quot;p&quot;</span>),</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>             <span class="at">caption =</span> <span class="st">&quot;Table 1. Frequency distributions of patients with nausea score &gt;= 1 and &gt;= 3, by treatment arm&quot;</span>) <span class="sc">%&gt;%</span>               </span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>             kableExtra<span class="sc">::</span><span class="fu">add_header_above</span>(<span class="fu">c</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;n&quot;</span> <span class="ot">=</span> <span class="dv">2</span>,  <span class="st">&quot;Score &gt;= 1&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot; &quot;</span>, <span class="st">&quot;Score &gt;= 3&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot; &quot;</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>             kableExtra<span class="sc">::</span><span class="fu">add_footnote</span>(<span class="st">&quot;p: result from a standard chi square test comparing score threshold frequency distributions between arms&quot;</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>                          <span class="at">notation =</span> <span class="st">&quot;symbol&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(table_1<span class="sc">$</span>individual,</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>             <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&#39;Item/Attribute&#39;</span>, <span class="st">&#39;Drug&#39;</span>, <span class="st">&#39;Placebo&#39;</span>, <span class="st">&#39;Drug&#39;</span>, <span class="st">&#39;Placebo&#39;</span>, <span class="st">&quot;p&quot;</span>, <span class="st">&quot;Drug&quot;</span>, <span class="st">&quot;Placebo&quot;</span>, <span class="st">&quot;p&quot;</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>             <span class="at">caption =</span> <span class="st">&quot;Table 1. Frequency distributions of patients with nausea score &gt;= 1 and &gt;= 3, by treatment arm&quot;</span>) <span class="sc">%&gt;%</span>               </span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>             kableExtra<span class="sc">::</span><span class="fu">add_header_above</span>(<span class="fu">c</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;n&quot;</span> <span class="ot">=</span> <span class="dv">2</span>,  <span class="st">&quot;Score &gt;= 1&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot; &quot;</span>, <span class="st">&quot;Score &gt;= 3&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot; &quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>             kableExtra<span class="sc">::</span><span class="fu">add_footnote</span>(<span class="st">&quot;p: result from a standard chi square test comparing score threshold frequency distributions between arms&quot;</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>                          <span class="at">notation =</span> <span class="st">&quot;symbol&quot;</span>)</span></code></pre></div>
+<pre><code>Warning: &#39;xfun::attr()&#39; is deprecated.
+Use &#39;xfun::attr2()&#39; instead.
+See help(&quot;Deprecated&quot;)
+Warning: &#39;xfun::attr()&#39; is deprecated.
+Use &#39;xfun::attr2()&#39; instead.
+See help(&quot;Deprecated&quot;)</code></pre>
 <table>
 <caption>
 Table 1. Frequency distributions of patients with nausea score &gt;= 1
